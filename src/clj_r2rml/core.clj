@@ -113,15 +113,7 @@
            language-mappers {:language language-term-mapper-comp}
            datatype-mappers {:datatype datatype-term-mapper-comp}
            graph-mappers    {:column-graph column-graph-term-mapper-comp
-                             :column-graph-iri column-graph-iri-term-mapper-comp}
-           val (TermMapper. (choose-term-mapper property-mappers spec)
-                            (choose-term-mapper object-mappers spec)
-                            (if (nil? (:rdf-type-property spec))
-                              nil
-                              (rdf-type-property-mapper (choose-term-mapper object-mappers spec)))
-                            (choose-term-mapper language-mappers spec)
-                            (choose-term-mapper datatype-mappers spec)
-                            (choose-term-mapper graph-mappers spec))]
+                             :column-graph-iri column-graph-iri-term-mapper-comp}]
        (TermMapper. (choose-term-mapper property-mappers spec)
                     (choose-term-mapper object-mappers spec)
                     (if (nil? (:rdf-type-property spec))
