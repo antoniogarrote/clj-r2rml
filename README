@@ -1,0 +1,144 @@
+# clj-r2rml
+
+Implementation of 'R2RML: RDB to RDF Mapping Language' W3C proposal for mapping relational databases into RDF in the Clojure programming language.
+It covers:
+
+ - support for custom mappings
+ - support for the default direct mapping as described in 'A Direct Mapping of Relational Data to RDF'
+
+Relevant W3C document URIs:
+
+http://www.w3.org/TR/2010/WD-r2rml-20101028/
+http://www.w3.org/TR/2010/WD-rdb-direct-mapping-20101118/
+
+The current implementation is MySQL centered.
+
+## Usage
+
+To create a mapping use Clojure maps describing the RDF triples in the mapping.
+For example the mapping:
+
+  {:logical-table   "select concat('_:Department',deptno) AS deptid, deptno, dname, loc from Dept"
+   :class           "xyz:dept"
+   :table-graph-iri "xyz:DeptGraph"
+   :subject-map     {:column "deptid"}
+   :property-object-map [{:property "dept:deptno"
+                          :column   "deptno"
+                          :datatype "xsd:positiveInteger"}
+                         {:property "dept:name"
+                          :column   "dname"}
+                         {:property "dept:location"
+                          :column   "loc"}
+                         {:property       "dept:COMPANY"
+                          :constant-value "XYZ Corporation"}]}
+
+is equivalent to the following mapping expressed using the Turtle RDF syntax:
+
+  <#TriplesMap1>
+      a rr:TriplesMap;
+      rr:logicalTable "
+         Select ('_:Department' || deptno) AS deptid
+              , deptno
+              , dname
+              , loc
+           from dept
+         ";
+      rr:class xyz:dept;
+      rr:tableGraphIRI xyz:DeptGraph;
+      rr:subjectMap [ a rr:BlankNodeMap; rr:column "deptid";
+                      rr:InverseExpression "{alias.}deptno = substr({alias.}deptid,length('_:Department')+1)"];
+      rr:propertyObjectMap [ rr:property dept:deptno; rr:column "deptno"; rr:datatype xsd:positiveInteger ];
+      rr:propertyObjectMap [ rr:property dept:name; rr:column "dname" ];
+      rr:propertyObjectMap [ rr:property dept:location; rr:column "loc" ];
+      rr:propertyObjectMap [ rr:property dept:COMPANY; rr:constantValue "XYZ Corporation" ];
+  .
+
+To run the mapping over some relational data, you need to create a mapping context containing a DB connection and call the run-mapping function,
+the resulting triples will be stored in the :results key of the context:
+
+  (def *context* (make-context *db-spec* {}))
+  (def *res* (:results (run-mapping clj-r2rml.core/test-spec *context* {})))
+
+The result will be stored in Quad records, containing a subject, a predicate, an object and a graph value. The object can containg a Literal record with value, datatype, and language.
+For the previous table with the following tuples:
+
+
+  Column Name	Column Datatype	   Column Key Constraints
+  deptno	INTEGER	           UNIQUE
+  dname	        VARCHAR(30)
+  loc	        VARCHAR(100)
+
+  deptno	  dname	       loc
+  10	        APPSERVER    NEW YORK
+
+The following triples are the generated in this case:
+
+  (#:clj-r2rml.core.Quad{:subject "_:Department10",
+                         :predicate "dept:deptno",
+                         :object #:clj-r2rml.core.Literal{:value "10",
+                                                          :datatype "xsd:positiveInteger",
+                                                          :language nil},
+                         :graph "xyz:DeptGraph"}
+   #:clj-r2rml.core.Quad{:subject "_:Department10",
+                         :predicate "dept:name",
+                         :object #:clj-r2rml.core.Literal{:value "APPSERVER",
+                                                          :datatype nil,
+                                                          :language nil},
+                         :graph "xyz:DeptGraph"}
+   #:clj-r2rml.core.Quad{:subject "_:Department10",
+                         :predicate "dept:location",
+                         :object #:clj-r2rml.core.Literal{:value "NEW YORK",
+                                                          :datatype nil,
+                                                          :language nil},
+                         :graph "xyz:DeptGraph"}
+   #:clj-r2rml.core.Quad{:subject "_:Department10",
+                         :predicate "dept:COMPANY",
+                         :object #:clj-r2rml.core.Literal{:value "XYZ Corporation",
+                                                          :datatype nil,
+                                                          :language nil},
+                         :graph "xyz:DeptGraph"}
+   #:clj-r2rml.core.Quad{:subject "_:Department10",
+                         :predicate "rdf:type",
+                         :object "xyz:dept",
+                         :graph "xyz:DeptGraph"})
+
+The default mapping can be applied using the default-mapping-triples function, providing a default
+namespace for the triples, a map of virtual tables and a context containing a database connection:
+
+  (default-mapping-triples "http://clj-r2rml.test" {"Dept" "select * from Dept"} *context*)
+
+The generated triples in this case are the following:
+
+  (#:clj-r2rml.core.Quad{:subject "_:0",
+                         :predicate "http://clj-r2rml.test/Dept#deptno",
+                         :object #:clj-r2rml.core.Literal{:value "10",
+                                                          :datatype "http://www.w3.org/TR/xmlschema-2/#integer",
+                                                          :language nil}, :graph nil}
+   #:clj-r2rml.core.Quad{:subject "_:0",
+                         :predicate "http://clj-r2rml.test/Dept#dname",
+                         :object #:clj-r2rml.core.Literal{:value "APPSERVER",
+                                                          :datatype nil,
+                                                          :language nil},
+                         :graph nil}
+   #:clj-r2rml.core.Quad{:subject "_:0",
+                         :predicate "http://clj-r2rml.test/Dept#loc",
+                         :object #:clj-r2rml.core.Literal{:value "NEW YORK",
+                                                          :datatype nil,
+                                                          :language nil},
+                         :graph nil}
+   #:clj-r2rml.core.Quad{:subject "_:0",
+                         :predicate "rdf:type",
+                         :object "http://clj-r2rml.test/Dept",
+                         :graph nil})
+
+A collection of Quad records can be transformed into RDF in the turtle format using the to-rdf function.
+
+## Installation
+
+Generate a jar using leiningen and add it to the dependencies of your project. Not in clojars yet.
+
+## License
+
+Copyright (C) 2010 Antonio Garrote
+
+Deistributed under the LGPL license
