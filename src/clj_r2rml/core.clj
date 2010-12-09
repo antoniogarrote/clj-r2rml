@@ -293,7 +293,7 @@
   ([ns triples]
      (let [output (StringBuilder.)]
        (doseq [[pref uri] ns]
-         (.append output (str "@prefix " pref ": " uri " . ")))
+         (.append output (str "@prefix " pref ": <" uri "> . ")))
        (doseq [triple triples]
          (let [s (:subject triple)
                p (:predicate triple)
@@ -308,7 +308,7 @@
              (.append output (str p " ")))
            (if (= 0 (.indexOf o "http:"))
              (.append output (str "<" o "> "))
-             (.append output (str o ".\r\n")))))
+             (.append output (str o " .")))))
        (str output))))
 
 ;; Public interface
@@ -550,6 +550,13 @@
      (let [fk-column-names (map (fn [fk-desc] (:local fk-desc)) (flatten (vals foreign-keys)))]
        (filter (fn [row] (not (some (fn [fk-column-name] (= (:field row) fk-column-name)) fk-column-names)))
                rows-description))))
+
+(defn clear-context
+  ([context]
+     (-> context
+         (assoc :results [])
+         (assoc :current-row-subject nil)
+         (assoc :blank-id 0))))
 
 (defn default-mapping-triples
   ([base-iri table-queries-map context]
