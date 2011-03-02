@@ -2,6 +2,9 @@
   (:use [clj-r2rml.sparql-engine] :reload)
   (:use [clj-r2rml.sparql-parser] :reload)
   (:use [clj-r2rml.sparql-update] :reload)
+  (:use [clj-r2rml.core] :reload)
+  (:use clojure.contrib.sql)
+  (:use clojure.contrib.sql.internal)
   (:use [clojure.test])
   (:use [clojure.pprint]))
 
@@ -79,8 +82,15 @@
     (is (= '(["a" "bb" "a"])
            (update-unit-to-triples unit env)))))
 
-(deftest test-execute-insert-data-query
+;;"PREFIX test: <http://test.com/Blog> SELECT ?s { ?s test:title \"c\" }"
+(deftest test-run-insert-query
   (let [table-mappers (map make-table-mapper *test-mapping-blogs*)
-        query "PREFIX test: <http://test.com/Blog> INSERT DATA { test:1 test:title \"c\" }"
-        engine (clj-r2rml.sparql-engine.SqlSparqlEngine. :todo table-mappers)]
-    (println (str "SQL:\n" (.execute engine query)))))
+        query "PREFIX test: <http://test.com/> PREFIX blog: <http://test.com/Blog/> INSERT DATA { blog:1 test:title \"c\" }"
+        ctx (make-context *db-spec* {})
+        engine (clj-r2rml.sparql-engine.SqlSparqlEngine. ctx table-mappers)]
+    (with-context-connection ctx
+      (do-commands "delete from Blogs;" "delete from Posts;"))
+    (execute engine query)
+    (let [res (execute engine "SELECT ?s { ?s ?p \"c\" }")]
+      (is (= "http://test.com/Blog/1" (:s (first res))))
+      (println (str "RESULT: " (vec res))))))

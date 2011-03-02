@@ -448,21 +448,24 @@
 
 
 (defn translate-delete
+  ([triples table-mapper should-join]
+     (let [sql (translate-delete triples table-mapper)]
+       (if should-join
+         (str (within-tokens "; " sql) ";")
+         sql)))
   ([triples table-mappers]
      (let [delete-context  (DeleteContext. table-mappers [])
            delete-row-contexts (generate-deletion-contexts triples delete-context)]
-       (within-tokens "; " (flatten (map (fn [[table-mapper delete-row-contexts]]
-                                           (println "table-mapper")
-                                           (pprint table-mapper)
-                                           (println "delete-row-contexts")
-                                           (pprint delete-row-contexts)
-                                           (map (fn [row-context]
-                                                  (str "DELETE FROM " (:table-name table-mapper) " WHERE "
-                                                       (within-tokens " AND "
-                                                        (map (fn [cond] (str (:column cond) "='" (:value cond)  "'"))
-                                                             (:conditions-columns row-context)))))
-                                                delete-row-contexts))
-                                         delete-row-contexts))))))
+       (flatten (map (fn [[table-mapper delete-row-contexts]]
+                                        ;(println "delete-row-contexts")
+                                        ;(pprint delete-row-contexts)
+                                                (map (fn [row-context]
+                                                       (str "DELETE FROM " (:table-name table-mapper) " WHERE "
+                                                            (within-tokens " AND "
+                                                                           (map (fn [cond] (str (:column cond) "='" (:value cond)  "'"))
+                                                                                (:conditions-columns row-context)))))
+                                                     delete-row-contexts))
+                     delete-row-contexts)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   query  algoritmh   ;;

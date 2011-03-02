@@ -70,6 +70,7 @@
 
 (defn project-results
   ([projection results-map]
+     (println (str "PROJECTING " projection " for " results-map))
      (if (and (= 1 (count projection)) (= "*" (:kind (first projection))))
        results-map
        (let [vars (reverse (map (fn [var] (println var) (keyword (:value (:value var)))) projection))]
@@ -78,8 +79,10 @@
 (defn execute-query-query
   ([parsed-query sql-context table-mappers]
      (let [env (make-ns-env parsed-query)
+           _ (println (str "PARSED QUERY " parsed-query))
            pattern (:pattern (first (:units parsed-query)))
            aqt (build-abstract-query-tree pattern env)
+           _ (println (str "TODO " (aqt table-mappers) " FOR " aqt))
            sql (translate (aqt table-mappers))]
        (println sql)
        (if (nil? sql)
@@ -98,20 +101,58 @@
        (map (fn [token] (normalize-triple token env))
             quads))))
 
-(defn update-query-to-triples
-  ([parsed-query env]
-     (apply concat (map (fn [unit] (update-unit-to-triples unit env))
-                        (:units parsed-query)))))
+(defn select-quad-pattern
+  ([quads table-mappers]
+     (let [aqt (if (= 1 (count quads))
+                 (dsl-triple (first quads))
+                 (apply AND (map #(dsl-triple %) quads)))
+           sql (translate (aqt table-mappers))]
+       (if (nil? sql)
+         (throw (Exception. "The query cannot be executed"))
+         (let [result  (with-query-results rs [sql] (vec rs))
+               projection [{:kind "*"}]]
+           (project-results projection result))))))
+
+(defn apply-bindings
+  ([quads bindings]
+     (map (fn [quad]
+            (map (fn [comp]
+                   (if (keyword? comp)
+                     (get bindings comp)
+                     comp))
+                 quad))
+          quads)))
+
+(defn execute-delete-where-query
+  ([unit env table-mappers]
+     (let [normalized-quads (update-unit-to-triples unit env)
+           _ (println (str "normalized quads: " (vec normalized-quads)))
+           results (select-quad-pattern normalized-quads table-mappers)
+           _ (println (str "results: " results))]
+       (doseq [bindings results]
+         (let [bound-triples (apply-bindings normalized-quads bindings)
+               _ (println (str "bound triples: " (vec bound-triples)))
+               sql-query (translate-delete bound-triples table-mappers false)
+               _ (println (str "query " (vec sql-query)))]
+           (if (coll? sql-query)
+             (apply do-commands sql-query)
+             (do-commands sql-query)))))))
 
 (defn execute-update-query
   ([parsed-query sql-context table-mappers]
-     (let [env (make-ns-env parsed-query)
-           triples (update-query-to-triples parsed-query env)
-           sql-query (translate-insert triples table-mappers)]
-       (if (nil? sql-query)
-         (throw (Exception. "The update query cannot be executed"))
-         (with-context-connection sql-context
-           (do-commands sql-query))))))
+     (with-context-connection sql-context
+       (let [env (make-ns-env parsed-query)]
+         (doseq [unit (:units parsed-query)]
+           (if (= (:kind unit) "deletewhere")
+             (execute-delete-where-query unit env table-mappers)
+             (let [sql-query (condp = (:kind unit)
+                                 "insertdata" (translate-insert (update-unit-to-triples unit env) table-mappers)
+                                 "deletedata" (translate-delete (update-unit-to-triples unit env) table-mappers false)
+                                 (throw (Exception. (str "Unknown update query " (:kind unit)))))
+                   _ (println (str "SQL QUERIES: " (if (coll? sql-query) (vec sql-query) sql-query)))]
+               (if (coll? sql-query)
+                 (apply do-commands sql-query)
+                 (do-commands sql-query)))))))))
 
 ;;
 ;; Engine protocol implementation
