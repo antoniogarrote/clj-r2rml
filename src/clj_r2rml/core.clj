@@ -396,6 +396,12 @@
      (let [commas (drop 1 (repeat (count elements) ","))]
        (reduce str (concat (interleave elements commas) (list (last elements)))))))
 
+(defn within-tokens
+  "Wraps a list of elements between a token"
+  ([token elements]
+     (let [commas (drop 1 (repeat (count elements) token))]
+       (reduce str (concat (interleave elements commas) (list (last elements)))))))
+
 (defn column-iri
   "Creates a single column / multi column iri provided the table iri"
   ([table-iri columns]
