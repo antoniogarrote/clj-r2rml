@@ -1,4 +1,5 @@
 pom.xml
-*jar
 lib
 classes
+/.DS_Store
+/rhino1_7R2/LICENSE.txt
