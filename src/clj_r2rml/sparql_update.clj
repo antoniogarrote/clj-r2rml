@@ -31,14 +31,15 @@
 
 ;; data types
 (defrecord UpdateTermMapper [position kind value])
-(defrecord UpdateTripleMapper [table-name subject property object])
+(defrecord UpdateTripleMapper [table-name subject property object graph])
 (defrecord UpdateTableMapper [table-name triple-mappers])
 
 (defn triple-mapper-to-list
   ([triple-mapper]
      [(:subject triple-mapper)
       (:property triple-mapper)
-      (:object triple-mapper)]))
+      (:object triple-mapper)
+      (:graph triple-mapper)]))
 
 ;; @todo Term mappers are lacking support for the datatype
 (defn make-object-term-mapper
@@ -56,6 +57,14 @@
                  (UpdateTermMapper. :property :variable (:property-column mapping))
                  (throw (Exception. ("Unknown values for propertyObjectMap " mapping)))))))
 
+;; @todo Term mappers are lacking support for the datatype
+;; @todo add more possible values in the mapping for the graph
+(defn make-graph-term-mapper
+  ([triples-mapping term-mapping]
+     (if (:table-graph-iri triples-mapping)
+       (UpdateTermMapper. :graph :constant (:table-graph-iri triples-mapping))
+       (UpdateTermMapper. :graph :constant nil))))
+
 ;; @todo Additional triple mappers for class and graph must be added
 (defn make-table-mapper
   ([triples-map]
@@ -65,7 +74,8 @@
                            (map (fn [mapping] (UpdateTripleMapper. table
                                                                   subject
                                                                   (make-property-term-mapper mapping)
-                                                                  (make-object-term-mapper :object mapping)))
+                                                                  (make-object-term-mapper :object mapping)
+                                                                  (make-graph-term-mapper triples-map mapping)))
                                 (:property-object-map triples-map))))))
 
 ;; triple pattern manipulation
@@ -78,12 +88,16 @@
 (defn object
   ([pattern] (nth pattern 2)))
 
+(defn graph
+  ([pattern] (nth pattern 3)))
+
 (defn extract-position
   ([position]
      (condp = position
          :subject subject
          :property property
          :object object
+         :graph  graph
          (throw (Exception. (str "Wrong triple position " position))))))
 
 ;; row insertion context
@@ -107,7 +121,7 @@
   "Generates the update column context from a compatible
    triple mapper and a single triple"
   ([triple compatible-triple-mapper]
-     (loop [positions [:subject :property :object]
+     (loop [positions [:subject :property :object :graph]
             contexts []]
        (let [position (first positions)]
          (if (empty? positions)
@@ -177,12 +191,14 @@
   ([triple-pattern triple-mapper]
      (let [subj (subject triple-pattern)
            prop (property triple-pattern)
-           obj  (object triple-pattern)]
+           obj  (object triple-pattern)
+           gph  (graph triple-pattern)]
        (reduce #(and %1 %2)
                true
                [(term-compatible? subj (:subject triple-mapper))
                 (term-compatible? prop (:property triple-mapper))
-                (term-compatible? obj  (:object triple-mapper))]))))
+                (term-compatible? obj  (:object triple-mapper))
+                (term-compatible? gph (:graph triple-mapper))]))))
 
 (defn table-compatible?
   "Checks if a triple and a table mapper are compatible"
@@ -427,7 +443,7 @@
 
 (defn make-delete-row-context
   ([triple triple-mapper]
-     (loop [positions   [:subject :property :object]
+     (loop [positions   [:subject :property :object :graph]
             projections []
             conditions  []]
        (if (empty? positions)
@@ -500,7 +516,7 @@
 
 (defn make-triple-select-projections
   ([triple triple-mapper]
-     (loop [positions   [:subject :property :object]
+     (loop [positions   [:subject :property :object :graph]
             projections []]
        (if (empty? positions)
          (filter #(not (nil? %)) projections)
@@ -520,7 +536,7 @@
 
 (defn make-triple-select-conditions
   ([triple triple-mapper]
-     (loop [positions   [:subject :property :object]
+     (loop [positions   [:subject :property :object :graph]
             conditions []]
        (if (empty? positions)
          (filter #(not (nil? %)) conditions)

@@ -51,7 +51,11 @@
      (println (str "NORMALIZING TRIPLE FOR: " token))
      [(normalize-term (:subject token) env)
       (normalize-term (:predicate token) env)
-      (normalize-term (:object token) env)]))
+      (normalize-term (:object token) env)
+      ;; If graph is nil -> default graph
+      (if (nil? (:graph token))
+        nil
+        (normalize-term (:graph token) env))]))
 
 ;; Select query impl.
 

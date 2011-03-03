@@ -5,27 +5,30 @@
 
 
 (deftest test-triple-compatible
-  (let [triple-a ["a" "b" "c"]
-        triple-b ["a" "b" "e"]
+  (let [triple-a ["a" "b" "c" nil]
+        triple-b ["a" "b" "e" nil]
         map-a (clj-r2rml.sparql-update.UpdateTripleMapper. "test"
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :subject :constant "a")
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :constant "c"))
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :constant "c")
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :constant :constant nil))
         map-b (clj-r2rml.sparql-update.UpdateTripleMapper. "test"
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :property :variable "column_b")
-                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))]
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))]
     (is (triple-compatible? triple-a map-a))
     (is (not (triple-compatible? triple-b map-a)))
     (is (triple-compatible? triple-a map-b))
     (is (triple-compatible? triple-b map-b))))
 
 (deftest make-update-column-context-test
-  (let [triple-a ["a" "b" "c"]
+  (let [triple-a ["a" "b" "c" nil]
         map-a (clj-r2rml.sparql-update.UpdateTripleMapper. "test"
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
         result (make-update-column-contexts triple-a map-a)]
     (is (= 2 (count result)))
     (let [col1 (:column (first result))
@@ -38,12 +41,13 @@
       (is (or (= col1 "column_a") (= col2 "column_c"))))))
 
 (deftest make-update-row-context-merge-test
-  (let [triple-a ["a" "b" "c"]
+  (let [triple-a ["a" "b" "c" nil]
         row-context (clj-r2rml.sparql-update.UpdateRowContext. [] :insert)
         map-a (clj-r2rml.sparql-update.UpdateTripleMapper. "test"
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
         update-columns (make-update-column-contexts triple-a map-a)]
     (is (can-merge? row-context update-columns))))
 
@@ -60,12 +64,13 @@
     (is (not (conflicting-contexts? ca caa)))))
 
 (deftest merge-contexts-test
-  (let [triple-a ["a" "b" "c"]
+  (let [triple-a ["a" "b" "c" nil]
         row-context (clj-r2rml.sparql-update.UpdateRowContext. [] :insert)
         map-a (clj-r2rml.sparql-update.UpdateTripleMapper. "test"
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
         compatible-update-column-contexts (make-update-column-contexts triple-a map-a)
         merged (merge-contexts row-context compatible-update-column-contexts)]
     (is (= 2 (count (:update-column-contexts merged))))))
@@ -75,17 +80,20 @@
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))])
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))])
             table-mapper-b (clj-r2rml.sparql-update.UpdateTableMapper. "test_numbers"
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_numbers"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_1")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "2")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_3"))])
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_3")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))])
             table-mapper-c (clj-r2rml.sparql-update.UpdateTableMapper. "triples"
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "triples"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "s")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :variable "p")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "o"))])
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "o")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))])
             table-context-a (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-a [])
             table-context-b (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-b [])
             table-context-c (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-c [])]
@@ -100,7 +108,7 @@
 
 (deftest get-compatible-table-mappers-test
   (let [test-schema-context (mock-schema-context)
-        mapping (get-compatible-table-mappers ["a" "b" "c"] (map :table-mapper (:update-table-contexts test-schema-context)))]
+        mapping (get-compatible-table-mappers ["a" "b" "c" nil] (map :table-mapper (:update-table-contexts test-schema-context)))]
     (is (= 2 (count (keys mapping))))
     (is (= 1 (count (get mapping (:table-mapper (table-context-by-table-name "test_letters" test-schema-context))))))
     (is (= 1 (count (get mapping (:table-mapper (table-context-by-table-name "triples" test-schema-context))))))))
@@ -109,18 +117,21 @@
   (let [triple-mapper (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                    (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                                    (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                   (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))]
-    (is (= 1 (count-constant-term-mappers triple-mapper)))))
+                                                                   (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                   (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))]
+    (is (= 2 (count-constant-term-mappers triple-mapper)))))
 
 (deftest sort-triple-mappers-test
   (let [triple-mapper-a (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
         triple-mapper-b (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :constant "e")
                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
         triple-mappers [triple-mapper-a
                         triple-mapper-b]
         sorted-triple-mappers (sort-triple-mappers triple-mappers)]
@@ -132,22 +143,26 @@
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :constant "a")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         ])
             table-mapper-b (clj-r2rml.sparql-update.UpdateTableMapper. "test_numbers"
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_numbers"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_1")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "2")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_3"))])
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_3")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))])
             table-mapper-c (clj-r2rml.sparql-update.UpdateTableMapper. "triples"
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "triples"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "s")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :variable "p")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "o"))])
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "o")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))])
             table-context-a (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-a [])
             table-context-b (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-b [])
             table-context-c (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-c [])]
@@ -155,7 +170,7 @@
 
 (deftest sort-table-mappers-map-test
   (let [test-schema-context (mock-schema-context-2)
-        mapping (get-compatible-table-mappers ["a" "b" "c"] (map :table-mapper (:update-table-contexts test-schema-context)))
+        mapping (get-compatible-table-mappers ["a" "b" "c" nil] (map :table-mapper (:update-table-contexts test-schema-context)))
         sorted-mappers-list (sort-table-mappers-map mapping)]
     (let [first-option (first (second (first sorted-mappers-list)))]
       (is (= (:kind (:subject first-option)) :constant))
@@ -174,7 +189,7 @@
       (is (= (:value (:property second-option)) "b"))
       (is (= (:value (:object second-option)) "column_c"))))
   (let [test-schema-context (mock-schema-context-2)
-        mapping (get-compatible-table-mappers ["e" "b" "c"] (map :table-mapper (:update-table-contexts test-schema-context)))
+        mapping (get-compatible-table-mappers ["e" "b" "c" nil] (map :table-mapper (:update-table-contexts test-schema-context)))
         sorted-mappers-list (sort-table-mappers-map mapping)]
     (let [first-option (first (second (first sorted-mappers-list)))]
       (is (= (:kind (:subject first-option)) :variable))
@@ -187,14 +202,14 @@
 
 (deftest get-compatible-table-mappers-test-2
   (let [test-schema-context (mock-schema-context-2)
-        mapping (get-compatible-table-mappers ["e" "b" "c"] (map :table-mapper (:update-table-contexts test-schema-context)))]
+        mapping (get-compatible-table-mappers ["e" "b" "c" nil] (map :table-mapper (:update-table-contexts test-schema-context)))]
     (is (= 2 (count (keys mapping))))
     (is (= 1 (count (get mapping (:table-mapper (table-context-by-table-name "test_letters" test-schema-context))))))
     (is (= 1 (count (get mapping (:table-mapper (table-context-by-table-name "triples" test-schema-context))))))))
 
 (deftest get-compatible-table-mappers-test-3
   (let [test-schema-context (mock-schema-context-2)
-        mapping (get-compatible-table-mappers ["a" "b" "c"] (map :table-mapper (:update-table-contexts test-schema-context)))]
+        mapping (get-compatible-table-mappers ["a" "b" "c" nil] (map :table-mapper (:update-table-contexts test-schema-context)))]
     (is (= 2 (count (keys mapping))))
     (is (= 2 (count (get mapping (:table-mapper (table-context-by-table-name "test_letters" test-schema-context))))))
     (is (= 1 (count (get mapping (:table-mapper (table-context-by-table-name "triples" test-schema-context))))))))
@@ -203,11 +218,13 @@
   (is (= (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                       (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                       (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
          (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                       (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                       (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")))))
+                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil)))))
 
 
 (deftest get-table-context-in-schema-context-test
@@ -216,21 +233,25 @@
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :constant "a")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         ])
         mapper-b (clj-r2rml.sparql-update.UpdateTableMapper. "test_letters"
                                                              [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                               (clj-r2rml.sparql-update.UpdateTripleMapper. "test_lettersb"
                                                                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :subject :constant "a")
                                                                                                            (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                           (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         ])
         table-context (clj-r2rml.sparql-update.UpdateTableContext. mapper [])]
     (is (= table-context (get-table-context-in-schema-context schema mapper)))
@@ -247,26 +268,31 @@
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :constant "a")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :subject :constant "a")
                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "f")
-                                                                                                        (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_g"))
+                                                                                                        (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_g")
+                                                                                                        (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         ])
             table-mapper-b (clj-r2rml.sparql-update.UpdateTableMapper. "test_numbers"
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_numbers"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_1")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "2")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_3"))])
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_3")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))])
             table-mapper-c (clj-r2rml.sparql-update.UpdateTableMapper. "triples"
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "triples"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "s")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :variable "p")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "o"))])
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "o")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))])
             table-context-a (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-a [])
             table-context-b (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-b [])
             table-context-c (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-c [])]
@@ -274,20 +300,23 @@
 
 (deftest insert-or-update-row-contexts-test
   (let [schema (mock-schema-context-3)
-        triple ["a" "b" "c"]
+        triple ["a" "b" "c" nil]
         mapper (clj-r2rml.sparql-update.UpdateTableMapper. "test_letters"
                                                            [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                          (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_a")
                                                                                                          (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                             (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                          (clj-r2rml.sparql-update.UpdateTermMapper. :subject :constant "a")
                                                                                                          (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                             (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :subject :constant "a")
                                                                                                         (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "f")
-                                                                                                        (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_g"))
+                                                                                                        (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_g")
+                                                                                                        (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                             ])
         mappings (second (first (compatible-table-mappers-for-triple triple [mapper])))
 ;        _ (println "1 -------------------------")
@@ -299,16 +328,16 @@
     (let [updated-schema (insert-or-update-row-contexts mapper new-update-columns schema)]
       (is (= 1 (count (:update-row-contexts (get-table-context-in-schema-context updated-schema mapper)))))
       (is (= 1 (schema-context-grade updated-schema)))
-      (let [mappings (second (first (compatible-table-mappers-for-triple ["a" "b" "m"] [mapper])))
-            new-update-columns (map  #(make-update-column-contexts ["a" "b" "m"] %) mappings)
+      (let [mappings (second (first (compatible-table-mappers-for-triple ["a" "b" "m" nil] [mapper])))
+            new-update-columns (map  #(make-update-column-contexts ["a" "b" "m" nil] %) mappings)
 ;            _ (println "2 ---------------------")
 ;            _ (pprint mappings)
 ;            _ (pprint new-update-columns)
             updated-schema-b (insert-or-update-row-contexts mapper new-update-columns updated-schema)]
         (is (= 2 (count (:update-row-contexts (get-table-context-in-schema-context updated-schema-b mapper)))))
         (is (= 2 (schema-context-grade updated-schema-b)))
-        (let [mapping (second (first (compatible-table-mappers-for-triple ["a" "f" "n"] [mapper])))
-              new-update-columns (make-update-column-contexts ["a" "f" "n"] mapping)
+        (let [mapping (second (first (compatible-table-mappers-for-triple ["a" "f" "n" nil] [mapper])))
+              new-update-columns (make-update-column-contexts ["a" "f" "n" nil] mapping)
 ;              _ (println "3 ---------------------")
 ;              _ (pprint mapping)
 ;              _ (pprint new-update-columns)
@@ -322,14 +351,14 @@
   (let [schema-context (mock-schema-context-3)
         update-context (clj-r2rml.sparql-update.UpdateContext. (map :table-mapper (:update-table-contexts schema-context))
                                                                [schema-context])
-        triple ["a" "b" "c"]
+        triple ["a" "b" "c" nil]
         compatible-table-mappers (compatible-table-mappers-for-triple triple (:table-mappers update-context))
         next-schema-contexts (next-level-schema-contexts triple compatible-table-mappers schema-context)]
     (is (= 2 (count next-schema-contexts)))
     (doseq [next-schema-context next-schema-contexts]
       (is (= 1 (schema-context-grade next-schema-context))))
-    (let [compatible-table-mappers (compatible-table-mappers-for-triple ["a" "f" "g"] (:table-mappers update-context))
-          level2-schema-contexts (next-level-schema-contexts ["a" "f" "g"] compatible-table-mappers (first next-schema-contexts))]
+    (let [compatible-table-mappers (compatible-table-mappers-for-triple ["a" "f" "g" nil] (:table-mappers update-context))
+          level2-schema-contexts (next-level-schema-contexts ["a" "f" "g" nil] compatible-table-mappers (first next-schema-contexts))]
       (is (= 1 (count level2-schema-contexts)))
       (is (= 1 (schema-context-grade (first level2-schema-contexts)))))))
 
@@ -339,22 +368,26 @@
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_letters_id")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "b")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_b"))
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_b")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         (clj-r2rml.sparql-update.UpdateTripleMapper. "test_letters"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_letters_id")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "c")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c"))
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_c")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))
                                                                         ])
             table-mapper-b (clj-r2rml.sparql-update.UpdateTableMapper. "test_numbers"
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "test_numbers"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "column_numbers_id")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :constant "2")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_2"))])
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "column_2")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))])
             table-mapper-c (clj-r2rml.sparql-update.UpdateTableMapper. "triples"
                                                                        [(clj-r2rml.sparql-update.UpdateTripleMapper. "triples"
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :subject :variable "s")
                                                                                                                      (clj-r2rml.sparql-update.UpdateTermMapper. :property :variable "p")
-                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "o"))])
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :object :variable "o")
+                                                                                                                     (clj-r2rml.sparql-update.UpdateTermMapper. :graph :constant nil))])
             table-context-a (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-a [])
             table-context-b (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-b [])
             table-context-c (clj-r2rml.sparql-update.UpdateTableContext. table-mapper-c [])]
@@ -364,10 +397,10 @@
   (let [schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))
         update-context (clj-r2rml.sparql-update.UpdateContext. table-mappers [schema-context])
-        triples [["a" "b" "vb"]
-                 ["1" "2" "v2"]
-                 ["a" "f" "vf"]
-                 ["a" "c" "vc"]]
+        triples [["a" "b" "vb" nil]
+                 ["1" "2" "v2" nil]
+                 ["a" "f" "vf" nil]
+                 ["a" "c" "vc" nil]]
         result (:update-schema-contexts (generate-update-contexts triples update-context))]))
 
 ;;    (println "RESULT\n\n\n")
@@ -384,7 +417,7 @@
 
 
 (deftest generate-deletion-contexts-test
-  (let [triples [["a" "b" "c"]]
+  (let [triples [["a" "b" "c" nil]]
         schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))
         delete-context (clj-r2rml.sparql-update.DeleteContext. table-mappers [schema-context])]
@@ -396,7 +429,7 @@
 (deftest select-triple-test
   (let [schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))]
-    (is (= ["s"] (get-terms (select-triple [:s "b" "n"] table-mappers))))))
+    (is (= ["s"] (get-terms (select-triple [:s "b" "n" nil] table-mappers))))))
     ;;(pprint (select-triple [:s :p :o] table-mappers))
     ;;(println "----------------------------------------")
     ;;(pprint (select-triple [:s "b" "n"] table-mappers))))
@@ -405,7 +438,7 @@
 (deftest translate-triple
   (let [schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))
-        triple (select-triple ["a" "c" :c] table-mappers)]
+        triple (select-triple ["a" "c" :c nil] table-mappers)]
     (is (= "(SELECT DISTINCT column_c AS c FROM test_letters WHERE TRUE AND column_letters_id='a'  AND column_c IS NOT NULL) UNION (SELECT DISTINCT o AS c FROM triples WHERE TRUE AND s='a'  AND p='c'  AND o IS NOT NULL)"
            (translate triple)))))
 
@@ -413,25 +446,25 @@
 (deftest translate-triple-and
   (let [schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))
-        triple (select-and (select-triple ["a" "b" :b] table-mappers)
-                           (select-triple ["a" "c" :c] table-mappers))]))
+        triple (select-and (select-triple ["a" "b" :b nil] table-mappers)
+                           (select-triple ["a" "c" :c nil] table-mappers))]))
 ;    (pprint (translate triple))))
 
 
 (deftest translate-triple-opt
   (let [schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))
-        triple (select-opt (select-and (select-triple ["a" "b" :b] table-mappers)
-                                       (select-triple ["a" "c" :c] table-mappers))
-                           (select-triple [:s "b" :o] table-mappers))]))
+        triple (select-opt (select-and (select-triple ["a" "b" :b nil] table-mappers)
+                                       (select-triple ["a" "c" :c nil] table-mappers))
+                           (select-triple [:s "b" :o nil] table-mappers))]))
 ;    (pprint (translate triple))))
 
 (deftest AND-1-test
   (let [schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))
-        query (AND ["a" "b" :b]
-                   ["a" "c" :c]
-                   [:s :p :o])]))
+        query (AND ["a" "b" :b nil]
+                   ["a" "c" :c nil]
+                   [:s :p :o nil])]))
 ;;    (pprint (translate (query table-mappers)))))
 ;;    (pprint (translate (query table-mappers)))))
 
@@ -439,10 +472,10 @@
 (deftest AND-2-test
   (let [schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))
-        query (AND ["a" :t :b]
-                   ["a" "c" :c]
-                   (OPT ["z" :t :u]
-                        ["z" :t :o]))]))
+        query (AND ["a" :t :b nil]
+                   ["a" "c" :c nil]
+                   (OPT ["z" :t :u nil]
+                        ["z" :t :o nil]))]))
 ;;    (pprint (translate (query table-mappers)))))
 
 
@@ -450,10 +483,10 @@
 (deftest test-translate-insert
   (let [schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))
-        triples [["a" "b" "vb"]
-                 ["1" "2" "v2"]
-                 ["a" "f" "vf"]
-                 ["a" "c" "vc"]]
+        triples [["a" "b" "vb" nil]
+                 ["1" "2" "v2" nil]
+                 ["a" "f" "vf" nil]
+                 ["a" "c" "vc" nil]]
         sql (translate-insert triples table-mappers)]
     (println sql)
     ))
@@ -461,8 +494,8 @@
 (deftest test-translate-delete
   (let [schema-context (mock-schema-context-4)
         table-mappers (map :table-mapper (:update-table-contexts schema-context))
-        triples [["a" "b" "vb"]
-                 ["1" "2" "v2"]]
+        triples [["a" "b" "vb" nil]
+                 ["1" "2" "v2" nil]]
         sql (translate-delete triples table-mappers)]
     (println sql)
     ))
