@@ -1,9 +1,9 @@
 (ns clj-r2rml.sparql-engine
     (:use clj-r2rml.core)
-  (:use clj-r2rml.sparql-parser)
-  (:use clj-r2rml.sparql-update)
-  (:use clojure.contrib.sql)
-  (:use [clojure.contrib.json :only [read-json]]))
+    (:use clj-r2rml.sparql-parser)
+    (:use clj-r2rml.sparql-update)
+    (:use clojure.contrib.sql)
+    (:use [clojure.contrib.json :only [read-json]]))
 
 (defprotocol SparqlEngine
   "An interface to execute SPARQL engines against a certain backend"
@@ -66,7 +66,9 @@
                                (build-abstract-query-tree(first (:patterns pattern)) env)
                                (apply AND (map #(build-abstract-query-tree % env) (:patterns pattern))))
          "basicgraphpattern" (if (= 1 (count (:triplesContext pattern)))
-                               (dsl-triple (normalize-triple (first (:triplesContext pattern)) env))
+                               (dsl-triple (let [triple(normalize-triple (first (:triplesContext pattern)) env)]
+                                             (println (str "NORMALIZED: " (vec triple)))
+                                             triple) )
                                (apply AND (map #(dsl-triple (normalize-triple % env)) (:triplesContext pattern))))
          (if (nil? (:predicate pattern))
            (throw (Exception. (str "Token " (:token pattern) " not supported yet in the Abstract Syntax Tree")))
@@ -85,6 +87,7 @@
      (let [env (make-ns-env parsed-query)
            _ (println (str "PARSED QUERY " parsed-query))
            pattern (:pattern (first (:units parsed-query)))
+           _ (println (str "PATTERN " pattern))
            aqt (build-abstract-query-tree pattern env)
            _ (println (str "TODO " (aqt table-mappers) " FOR " aqt))
            sql (translate (aqt table-mappers))]

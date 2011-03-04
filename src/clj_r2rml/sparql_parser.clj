@@ -7,17 +7,20 @@
   ([file-path] (slurp file-path)))
 
 
-(def *ctx* (Context/enter))
-(def *scope* (let [scope (.initStandardObjects *ctx*)]
+(def *scope* (let [*ctx* (Context/enter)
+                   scope (.initStandardObjects *ctx*)]
                (.evaluateString *ctx* scope (read-script) "sparql-parser.js" 1 nil)
+               (Context/exit)
                scope))
 
 
 (defn parse-sparql [query]
-  (let [jsfn (.get *scope* "sparql_query" *scope*)
+  (let [*ctx* (Context/enter)
+        jsfn (.get *scope* "sparql_query" *scope*)
         args (make-array String 1)]
     (aset args 0 query)
     (let [result (.call jsfn *ctx* *scope* *scope* args)]
       (println (Context/toString result))
+      (Context/exit)
       (read-json result))))
 
