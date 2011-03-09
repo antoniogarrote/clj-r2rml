@@ -1,49 +1,46 @@
 /*
- *  CandidateView.j
- *  TestXib
+ *  EducationView.j
+ *  CVBuilder
  *
- *  Created by Antonio Garrote on 3/6/11.
+ *  Created by Antonio Garrote on 3/9/11.
  *  Copyright Universidad de Salamanca 2011. All rights reserved.
 */
 
 @import <AppKit/AppKit.j>
 @import <Foundation/Foundation.j>
-@import "Candidate.j"
+@import "Education.j"
+@import "DatePicker.j"
 
-@implementation CandidateView : CPView
+@implementation EducationView : CPView
 {
-	CPTextField addressField;
-	CPTextField addressFieldLabel;
-	CPTextField nameField;
-	CPTextField telephoneField;
-        CPTextField telephoneFieldLabel;
-        CPButton    editBtn;
-	Candidate   candidate;
+  DatePicker  startDatePicker;
+  CPTextField startDateLabel;
+  
+  CPButton    editBtn;
+  Education   education;
 
 
-        CPWindow    editWin;
-        CPTextField editNameFieldLabel;
-        CPTextField editNameField;
-        CPTextField editFamilyNameFieldLabel
-        CPTextField editFamilyNameField;
-        CPTextField editAddressFieldLabel;
-        CPTextField editAddressField;
-        CPTextField editTelephoneFieldLabel
-        CPTextField editTelephoneField;
-        CPTextField editBDayFieldLabel;
+  CPWindow    editWin;
+
+  DatePicker  editStartDatePicker;
+  CPTextField editStartDatePickerLabel;
 }
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
 
     if(self) {
-      nameField           = [[CPTextField alloc] initWithFrame:CGRectMake(20, 40, 500, 40)];
-      addressFieldLabel   = [[CPTextField alloc] initWithFrame:CGRectMake(20, 90, 100, 20)];
-      addressField        = [[CPTextField alloc] initWithFrame:CGRectMake(120, 90, 400, 20)];
-      telephoneFieldLabel = [[CPTextField alloc] initWithFrame:CGRectMake(20, 110, 100, 20)];
-      telephoneField      = [[CPTextField alloc] initWithFrame:CGRectMake(120, 110, 400, 20)];
-      bdayFieldLabel      = [[CPTextField alloc] initWithFrame:CGRectMake(20, 130, 100, 20)];
-      bdayField           = [[CPTextField alloc] initWithFrame:CGRectMake(120, 130, 400, 20)];
+      var marginLeft     = 20;
+      var marginLeftForm = 120;
+      var topOffset      = 40;
+      var labelWidth     = 100;
+      var formWidth      = 500;
+      var height         = 20
+
+      startDateLabel= [[CPTextField alloc] initWithFrame:CGRectMake(marginLeft, topOffset, labelWidth, height)];
+      startDatePicker [[DatePicker alloc] initWithContentRect:CGRectMake(marginLeftForm, topOffset, formWidth, height)];
+      [startDatePicker displayPreset:1];
+      [startDatePicker setDelegate:self];
 
       editBtn             = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 30, 80, 24)];
 

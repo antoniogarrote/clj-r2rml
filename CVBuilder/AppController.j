@@ -15,6 +15,8 @@
 @implementation AppController : CPObject
 {
   Candidate candidate;
+  CPArray studies;
+
   CandidateView candidateView;
   CPView contentView;
   CPToolbar toolbar;
@@ -27,6 +29,12 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
+  // data
+  
+  candidate = NULL;
+  studies = [[CPArray alloc] init];
+
+  // views
 
   var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
   contentView = [theWindow contentView];
@@ -54,19 +62,73 @@
   SemanticItemIdentifier = @"semantic_item_identifier";
 
 
-  toolbar = [[CPToolbar alloc] initWithIdentifier:"Sections"];
+  toolbar = [[CPToolbar alloc] initWithIdentifier:@"Sections"];
   [toolbar setDelegate:self];
   [toolbar setVisible:YES];
   [theWindow setToolbar:toolbar];
 
 
-  // Testing loading a candidate
-  candidate = [[Candidate alloc] init];
-  [candidate loadFromURL:@"http://localhost:8080/api/candidates/antonio-garrote-457906" withNetworkDelegate:self];
+  // Redraw main interface
+  [self redrawCV];
 
+  // Testing loading a candidate
+  var aCandidate = [[Candidate alloc] init];
+  var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrotehernndez-409588"
+  // var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrote-457906"
+  [aCandidate loadFromURL:candidateUri withNetworkDelegate:self];
 
   // Uncomment the following line to turn on the standard menu bar.
   //[CPMenu setMenuBarVisible:YES];
+}
+
+-(void)redrawCV
+{
+  // cleaning old views
+  var views = [contentView subviews];
+  var viewsCount = [views count];
+  for(var i=0; i<viewsCount; i++) {
+    var view = [views objectAtIndex:i];
+    [view removeFromSuperview];
+  }
+
+  var marginLeft       = 40;
+  var marginTopCounter = 20;
+  var width            = CGRectGetWidth([contentView bounds]) - 80;
+  var minHeight        = CGRectGetHeight([contentView bounds]) - 20;
+
+  if(candidate) {
+
+    // candiate's profile section
+ 
+    var candidateRectHeight = 200;
+    var rect = CGRectMake(marginLeft,marginTopCounter,width, candidateRectHeight);
+ 
+    candidateView = [[CandidateView alloc] initWithFrame:rect];
+    [candidateView setAutoresizingMask:CPViewWidthSizable];
+ 
+    [candidateView setCandidate:candidate];
+    [candidateView setBackgroundColor:[CPColor whiteColor]];
+    [contentView addSubview:candidateView];
+    
+    marginTopCounter = marginTopCounter + candidateRectHeight;
+ 
+    // candidate's studies section
+ 
+    var studiesCount = [studies count];
+    for(var i=0; i<studiesCount; i++) {
+      // @todo
+    }
+  }
+ 
+  if(marginTopCounter < minHeight) {
+    var rect = CGRectMake(marginLeft,marginTopCounter,width, (minHeight - marginTopCounter));
+ 
+    paddingView = [[CPView alloc] initWithFrame:rect];
+    [paddingView setAutoresizingMask:CPViewWidthSizable];
+ 
+    [paddingView setBackgroundColor:[CPColor whiteColor]];
+    [contentView addSubview:paddingView];
+  }
 }
 
 // Handling of Candidates
@@ -77,15 +139,8 @@
 
 -(void)candidateLoaded:(Candidate)aCandidate
 {
-
-  var rect = CGRectMake(40,20,CGRectGetWidth([contentView bounds]) - 80, 200);
-
-  candidateView = [[CandidateView alloc] initWithFrame:rect];
-  [candidateView setAutoresizingMask:CPViewWidthSizable];
-
-  [candidateView setCandidate:aCandidate];
-  [candidateView setBackgroundColor:[CPColor whiteColor]];
-  [contentView addSubview:candidateView];
+  candidate = aCandidate;
+  [self redrawCV];
 }
 
 // ToolBar
