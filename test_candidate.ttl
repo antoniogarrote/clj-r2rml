@@ -1,0 +1,6 @@
+@prefix vc:<http://www.w3.org/2006/vcard/ns#> .
+[ vc:given-name "Antonio" ;
+  vc:family-name "Garrote Hernández" ;
+  vc:bday "01-05-1982" ;
+  vc:tel "+34689907848" ;
+  vc:adr "523 Finchley Rd, London, UK" ]

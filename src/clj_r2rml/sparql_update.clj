@@ -63,7 +63,12 @@
   ([triples-mapping term-mapping]
      (if (:table-graph-iri triples-mapping)
        (UpdateTermMapper. :graph :constant (:table-graph-iri triples-mapping))
-       (UpdateTermMapper. :graph :constant nil))))
+       (if (:column-graph triples-mapping)
+         (UpdateTermMapper. :variable :variable (:column-graph triples-mapping))
+         (if (:column-graph-iri triples-mapping)
+           (UpdateTermMapper. :graph :constant (:column-graph-iri triples-mapping))
+           (UpdateTermMapper. :graph :constant nil))))))
+
 
 ;; @todo Additional triple mappers for class and graph must be added
 (defn make-table-mapper
@@ -117,6 +122,23 @@
            column (:value term-mapper)]
        (UpdateColumnContext. column value))))
 
+(defn uniq
+  "Removes columns with duplicate values"
+  ([update-column-contexts]
+     (reduce (fn [ac ucc]
+               (if (some (fn [old-ucc]
+                           (println (str "checking [" (:column ucc) "," (:value ucc) "] vs [" (:column old-ucc) "," (:value old-ucc) "]"))
+                           (if (and (= (:column ucc) (:column old-ucc))
+                                    (= (:value ucc) (:value old-ucc)))
+                             true
+                             (if (= (:column ucc) (:column old-ucc))
+                               (throw (Exception. (str "Conflicting value for column " (:column ucc))))
+                               false)))
+                          ac)
+                 ac (conj ac ucc)))
+             []
+             update-column-contexts)))
+
 (defn make-update-column-contexts
   "Generates the update column context from a compatible
    triple mapper and a single triple"
@@ -125,7 +147,7 @@
             contexts []]
        (let [position (first positions)]
          (if (empty? positions)
-           contexts
+           (uniq contexts)
            (if (= :constant (:kind (position compatible-triple-mapper)))
              (recur (rest positions)
                     contexts)
@@ -402,7 +424,9 @@
 
 (defn translate-insert
   ([triples table-mappers]
-     (let [initial-update-schema-context (UpdateSchemaContext. (map (fn [table-mapper] (clj-r2rml.sparql-update.UpdateTableContext. table-mapper [])) table-mappers))
+     (let [_ (println (str "TRIPLES: " (vec triples)))
+           _ (println (str "TABLE MAPPERS: " table-mappers))
+           initial-update-schema-context (UpdateSchemaContext. (map (fn [table-mapper] (clj-r2rml.sparql-update.UpdateTableContext. table-mapper [])) table-mappers))
            initial-update-context (UpdateContext.
                                    table-mappers
                                    [initial-update-schema-context])

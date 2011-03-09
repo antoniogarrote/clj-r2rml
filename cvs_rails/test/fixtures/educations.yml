@@ -1,0 +1,13 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  start: MyString
+  end: MyString
+  institution: MyString
+  titulation: MyString
+
+two:
+  start: MyString
+  end: MyString
+  institution: MyString
+  titulation: MyString

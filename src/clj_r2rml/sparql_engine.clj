@@ -1,61 +1,15 @@
 (ns clj-r2rml.sparql-engine
-    (:use clj-r2rml.core)
-    (:use clj-r2rml.sparql-parser)
-    (:use clj-r2rml.sparql-update)
-    (:use clojure.contrib.sql)
-    (:use [clojure.contrib.json :only [read-json]]))
+  (:use clj-r2rml.core)
+  (:use clj-r2rml.triples)
+  (:use clj-r2rml.sparql-parser)
+  (:use clj-r2rml.sparql-update)
+  (:use clojure.contrib.sql)
+  (:use [clojure.contrib.json :only [read-json]]))
 
 (defprotocol SparqlEngine
   "An interface to execute SPARQL engines against a certain backend"
   (execute [this query]))
 
-;; common utility functions
-
-(defn blank?
-  ([x] (or (nil? x) (= x ""))))
-
-(defn make-ns-env
-  ([parsed-query]
-     (let [prologue (:prologue parsed-query)
-           default (if (= (prologue :base) "")
-                     nil (-> prologue :base :value))
-           prefixes (reduce (fn [m token] (assoc m (:prefix token) (:local token))) {} (:prefixes prologue))]
-       {:ns {:default default :prefixes prefixes}})))
-
-(defn check-prefix
-  ([prefix env]
-     (let [val (get (-> env :ns :prefixes) prefix)]
-       (if (nil? val)
-         (throw (Exception. (str "No registered prefix in current environment for value: " prefix)))
-         val))))
-
-(defn normalize-uri
-  ([term env]
-     (if (blank? (:prefix term))
-       (if (blank? (:value term))
-         (-> env :ns :default)
-         (:value term))
-       (let [prefix-val (check-prefix (:prefix term) env)]
-         (str prefix-val (:suffix term))))))
-
-(defn normalize-term
-  ([term env]
-     (condp = (:token term)
-         "uri" (normalize-uri term env)
-         "literal" (:value term)
-         "var" (keyword (:value term))
-         (throw (Exception. "Unknown URI component " term)))))
-
-(defn normalize-triple
-  ([token env]
-     (println (str "NORMALIZING TRIPLE FOR: " token))
-     [(normalize-term (:subject token) env)
-      (normalize-term (:predicate token) env)
-      (normalize-term (:object token) env)
-      ;; If graph is nil -> default graph
-      (if (nil? (:graph token))
-        nil
-        (normalize-term (:graph token) env))]))
 
 ;; Select query impl.
 
@@ -80,7 +34,7 @@
      (if (and (= 1 (count projection)) (= "*" (:kind (first projection))))
        results-map
        (let [vars (reverse (map (fn [var] (println var) (keyword (:value (:value var)))) projection))]
-         (map (fn [result] (reduce (fn [tuple v] (assoc tuple v (get result v))) {} vars)) results-map)))))
+         (map (fn [result] (reduce (fn [tuple v] (assoc tuple v (infer-result-kind (get result v)))) {} vars)) results-map)))))
 
 (defn execute-query-query
   ([parsed-query sql-context table-mappers]
@@ -148,7 +102,8 @@
 (defn execute-update-query
   ([parsed-query sql-context table-mappers]
      (with-context-connection sql-context
-       (let [env (make-ns-env parsed-query)]
+       (let [env (make-ns-env parsed-query)
+             rows (atom 0)]
          (doseq [unit (:units parsed-query)]
            (if (= (:kind unit) "deletewhere")
              (execute-delete-where-query unit env table-mappers)
@@ -157,9 +112,13 @@
                                  "deletedata" (translate-delete (update-unit-to-triples unit env) table-mappers false)
                                  (throw (Exception. (str "Unknown update query " (:kind unit)))))
                    _ (println (str "SQL QUERIES: " (if (coll? sql-query) (vec sql-query) sql-query)))]
-               (if (coll? sql-query)
-                 (apply do-commands sql-query)
-                 (do-commands sql-query)))))))))
+               (let [result (if (coll? sql-query)
+                              (apply do-commands sql-query)
+                              (do-commands sql-query))
+                     _ (println (str "RESULTS HERE: " result))]
+                 (when (=  result 0) (throw (Exception. "wrong update")))
+                 (swap! rows #(+ % (apply + result)))))))
+         @rows))))
 
 ;;
 ;; Engine protocol implementation

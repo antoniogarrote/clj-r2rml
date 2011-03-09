@@ -1,0 +1,9 @@
+@prefix vc:<http://www.w3.org/2006/vcard/ns#> .
+@prefix cv:<http://rdfs.org/resume-rdf/> .
+@prefix foaf:<http://xmlns.com/foaf/0.1/> .
+
+<http://test.com/api/candidates/antonio-garrotehernndez-2070/educations/650935#self> cv:startDate "01-09-2000" .
+<http://test.com/api/candidates/antonio-garrotehernndez-2070/educations/650935#self>  cv:endDate "01-07-2003" .
+<http://test.com/api/candidates/antonio-garrotehernndez-2070/educations/650935#self>  cv:studiedIn <http://test.com/api/organizations/133470#self> .
+<http://test.com/api/candidates/antonio-garrotehernndez-2070/educations/650935#self>  cv:degreeType "Ingenieria Tecnica Informatica Sistemas" .
+<http://test.com/api/candidates/antonio-garrotehernndez-2070/educations/650935#self>  <http://test.com/api/studiedBy> <http://test.com/api/candidates/antonio-garrotehernndez-2070> .

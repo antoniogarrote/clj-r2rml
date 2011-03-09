@@ -25,12 +25,13 @@
 
 (defn parse-named-graph-creation-mechanism
   ([minter env]
-     (if (map? minter)
-       (let [uri (uri-or-blank-id minter env)
-             minter {:template (:uriTemplate minter)
-                     :components (:mapped_uri_parts minter)}]
-         (swap! (:creation-mechanisms env) (fn [m] (assoc m uri minter)))
-         uri))))
+     (if (nil? minter) nil
+         (if (map? minter)
+           (let [uri (uri-or-blank-id minter env)
+                 minter {:template (:uriTemplate minter)
+                         :components (:mapped_uri_parts minter)}]
+             (swap! (:creation-mechanisms env) (fn [m] (assoc m uri minter)))
+             uri)))))
 
 (defn parse-lda-resource
   ([resource env]
@@ -38,6 +39,7 @@
            table-mapper (parse-r2rml-mapping (-> resource :endPoint) env)
            minter (parse-named-graph-creation-mechanism (-> resource :namedGraphCreationMechanism) env)
            resource {:template (:uriTemplate resource)
+                     :mappedUriTemplate (:mappedUriTemplate resource)
                      :mapping table-mapper
                      :minter minter
                      :operations (:hasOperation resource)}]
