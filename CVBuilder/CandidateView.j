@@ -37,13 +37,13 @@
     self = [super initWithFrame:frame];
 
     if(self) {
-      nameField           = [[CPTextField alloc] initWithFrame:CGRectMake(20, 40, 500, 40)];
-      addressFieldLabel   = [[CPTextField alloc] initWithFrame:CGRectMake(20, 90, 100, 20)];
-      addressField        = [[CPTextField alloc] initWithFrame:CGRectMake(120, 90, 400, 20)];
-      telephoneFieldLabel = [[CPTextField alloc] initWithFrame:CGRectMake(20, 110, 100, 20)];
-      telephoneField      = [[CPTextField alloc] initWithFrame:CGRectMake(120, 110, 400, 20)];
-      bdayFieldLabel      = [[CPTextField alloc] initWithFrame:CGRectMake(20, 130, 100, 20)];
-      bdayField           = [[CPTextField alloc] initWithFrame:CGRectMake(120, 130, 400, 20)];
+      nameField           = [[CPTextField alloc] initWithFrame:CGRectMake(40, 40, 500, 40)];
+      addressFieldLabel   = [[CPTextField alloc] initWithFrame:CGRectMake(40, 90, 100, 20)];
+      addressField        = [[CPTextField alloc] initWithFrame:CGRectMake(140, 90, 400, 20)];
+      telephoneFieldLabel = [[CPTextField alloc] initWithFrame:CGRectMake(40, 110, 100, 20)];
+      telephoneField      = [[CPTextField alloc] initWithFrame:CGRectMake(140, 110, 400, 20)];
+      bdayFieldLabel      = [[CPTextField alloc] initWithFrame:CGRectMake(40, 130, 100, 20)];
+      bdayField           = [[CPTextField alloc] initWithFrame:CGRectMake(140, 130, 400, 20)];
 
       editBtn             = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 30, 80, 24)];
 

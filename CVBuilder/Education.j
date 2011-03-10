@@ -9,19 +9,20 @@
 @import <Foundation/Foundation.j>
 @import "RDFObject.j"
 
+ @implementation Education : RDFObject
+ {
+ }
 
-@implementation Education : RDFObject
-{
-}
-
-- (id)initForCandidate:aCandidate
-{
+-(id)initForCandidate:aCandidate {
   self = [super init];
 
-  triples = {'#':{cvapi: "http://test.com/api/",
-                  cv: "http://rdfs.org/resume-rdf/"}};
+  if(self) {
+    triples = {'#':{cvapi: "http://test.com/api/",
+                    cv: "http://rdfs.org/resume-rdf/"}};
 
-  endpoint = [[stringByAppendingString:uri] @"/educations"]                                         
+    triples["cvapi:studiedBy"] = [aCandidate uri];
+    endpoint = [[aCandidate uri] stringByAppendingString: @"/educations"];
+  }
   return self;
 }
 
@@ -37,7 +38,7 @@
 
 -(void)setStudiedInOrganizationName:(Organization)anOrganization
 {
-  triples["cv:studiedIn"] = [anOrganization homepage];
+  triples["cv:studiedIn"] = anOrganization;
 }
 
 -(void)setDegreeType:(CPString)degree
@@ -50,34 +51,34 @@
   triples["cvapi:studiedBy"] = [aCandidate uri];
 }
 
--(void)uri
+-(id)uri
 {
   return triples["@"];
 }
 
--(void)sartDate:
+-(id)startDate
 {
   return triples["cv:startDate"];
 }
 
--(void)setEndDate:
+-(id)endDate
 {
   return triples["cv:endDate"];
 }
 
--(void)setStudiedInOrganizationName
+-(id)studiedInOrganizationName
 {
   return triples["cv:studiedIn"];
 }
 
--(void)setDegreeType:
+-(id)degreeType
 {
   return triples["cv:degreeType"];
 }
 
--(void)setStudiedBy:
+-(id)studiedBy
 {
-  return triples["cvapi:studiedBy"];
+  return [Backend searchNode:triples["cvapi:studiedBy"]];
 }
 
 @end

@@ -13,9 +13,15 @@
 
 @implementation EducationView : CPView
 {
-  DatePicker  startDatePicker;
-  CPTextField startDateLabel;
-  
+
+  BOOL isCreation;
+
+  CPTextField startDateTextField;
+  CPTextField endDateTextField;
+  CPTextField dashTextField;
+  CPTextField degreeTextField;
+  CPTextField institutionNameTextField;
+
   CPButton    editBtn;
   Education   education;
 
@@ -24,86 +30,92 @@
 
   DatePicker  editStartDatePicker;
   CPTextField editStartDatePickerLabel;
+  DatePicker  editEndDatePicker;
+  CPTextField editEndDatePickerLabel;
+  CPTextField editDegreeTextField;
+  CPTextField editDegreeLabel;
+  CPTextField editInstitutionName;
+  CPTextField editInstitutionNameLabel;
+  CPTextField editInstitutionUri;
+  CPTextField editInstitutionUriLabel;
+
+  id delegate;
 }
 
-- (id)initWithFrame:(CGRect)frame {
+- (id)initWithFrame:(CGRect)frame andDelegate:aDelegate {
     self = [super initWithFrame:frame];
 
     if(self) {
-      var marginLeft     = 20;
+      isCreation = false;
+
+      delegate  = aDelegate;
+
+      var marginLeft     = 40;
       var marginLeftForm = 120;
       var topOffset      = 40;
       var labelWidth     = 100;
       var formWidth      = 500;
-      var height         = 20
+      var height         = 40
 
-      startDateLabel= [[CPTextField alloc] initWithFrame:CGRectMake(marginLeft, topOffset, labelWidth, height)];
-      startDatePicker [[DatePicker alloc] initWithContentRect:CGRectMake(marginLeftForm, topOffset, formWidth, height)];
-      [startDatePicker displayPreset:1];
-      [startDatePicker setDelegate:self];
+      startDateTextField = [[CPTextField alloc] initWithFrame:CGRectMake(40, topOffset, 60, height)];
+      [startDateTextField setBackgroundColor:[CPColor whiteColor]];
+      [startDateTextField setFont:[CPFont fontWithName:@"Arial" size:15]];
 
-      editBtn             = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 30, 80, 24)];
+      dashTextField =  [[CPTextField alloc] initWithFrame:CGRectMake(105, topOffset, 20, height)];
+      [dashTextField setBackgroundColor:[CPColor whiteColor]];
+      [dashTextField setFont:[CPFont fontWithName:@"Arial" size:15]];
+      [dashTextField setStringValue:@" - "];
+
+      endDateTextField = [[CPTextField alloc] initWithFrame:CGRectMake(130, topOffset, 90, height)];
+      [endDateTextField setBackgroundColor:[CPColor whiteColor]];
+      [endDateTextField setFont:[CPFont fontWithName:@"Arial" size:15]];
+
+      degreeTextField  = [[CPTextField alloc] initWithFrame:CGRectMake(230, topOffset, formWidth, 30)];
+      [degreeTextField setBackgroundColor:[CPColor whiteColor]];
+      [degreeTextField setFont:[CPFont boldFontWithName:@"Arial" size:18]];
+
+
+      topOffset = topOffset + height;
+
+      institutionNameTextField = [[CPTextField alloc] initWithFrame:CGRectMake(230, topOffset, formWidth, height)];
+      [institutionNameTextField setBackgroundColor:[CPColor whiteColor]];
+      [institutionNameTextField setFont:[CPFont fontWithName:@"Arial" size:15]];
+
+      topOffset = topOffset + height;
+
+
+      editBtn = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 30, 80, 24)];
 
       [editBtn setTitle:@"Edit"];
       [editBtn setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/edit.png"]];
       [editBtn setTarget:self];
-      [editBtn setAction:@selector(editCandidate:)];
+      [editBtn setAction:@selector(editEducation:)];
     }
     return self;
 }
 
--(void)updateCandidate {
-  var name = [[[candidate givenName] stringByAppendingString:" "] stringByAppendingString:[candidate familyName]];
-  [nameField setStringValue:name];
-  [addressField setStringValue:[candidate address]];
-  [telephoneField setStringValue:[candidate telephone]];
-  [bdayField setStringValue:[candidate birthDay]];
+-(void)updateEducation {
+  [startDateTextField setStringValue:[education startDate]];
+  [endDateTextField setStringValue:[education endDate]];
+  [degreeTextField setStringValue:[education degreeType]];
+  [institutionNameTextField setStringValue:[education studiedInOrganizationName]];
 }
 
--(void)setCandidate:(Candidate)aCandidate
+-(void)setEducation:(Education)anEducation
 {
-	candidate = aCandidate;
 
-        // Created the UI components
+  education = anEducation;
 
-        // Name
-        [nameField setFont:[CPFont boldFontWithName:@"Arial" size:30]];
-        [nameField setBackgroundColor:[CPColor whiteColor]];
-        [self addSubview:nameField];
+  // Created the UI components
 
-        // Address
-        [addressFieldLabel setStringValue: @"Address: "];
-        [addressFieldLabel setBackgroundColor:[CPColor whiteColor]];
-        [addressFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:15]];
+  [self setBackgroundColor:[CPColor whiteColor]];
+  [self addSubview:startDateTextField];
+  [self addSubview:dashTextField];
+  [self addSubview:endDateTextField];
+  [self addSubview:degreeTextField];
+  [self addSubview:institutionNameTextField];
 
-        [addressField setBackgroundColor:[CPColor whiteColor]];
-        [addressField setFont:[CPFont fontWithName:@"Arial" size:15]];
-        [self addSubview: addressFieldLabel];
-        [self addSubview: addressField];
-
-        // Telephone
-        [telephoneFieldLabel setStringValue: @"Telephone: "];
-        [telephoneFieldLabel setBackgroundColor:[CPColor whiteColor]];
-        [telephoneFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:15]];
-
-        [telephoneField setBackgroundColor:[CPColor whiteColor]];
-        [telephoneField setFont:[CPFont fontWithName:@"Arial" size:15]];
-        [self addSubview: telephoneFieldLabel];
-        [self addSubview: telephoneField];
-
-        // Bday
-        [bdayFieldLabel setStringValue: @"Birth Day: "];
-        [bdayFieldLabel setBackgroundColor:[CPColor whiteColor]];
-        [bdayFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:15]];
-
-        [bdayField setBackgroundColor:[CPColor whiteColor]];
-        [bdayField setFont:[CPFont fontWithName:@"Arial" size:15]];
-        [self addSubview: bdayFieldLabel];
-        [self addSubview: bdayField];
-
-
-        [self updateCandidate];
-
+  [self updateEducation];
 }
 
 - (void)drawRect:(CPRect)aRect {
@@ -113,14 +125,14 @@
 
 -(void)mouseEntered:(CPEvent)anEvent {
   var selectedColor = [CPColor colorWithHexString:@"dee4eb"];
+
   [self setBackgroundColor:selectedColor];
-  [addressField setBackgroundColor:selectedColor];
-  [addressFieldLabel setBackgroundColor:selectedColor];
-  [nameField setBackgroundColor:selectedColor];
-  [telephoneField setBackgroundColor:selectedColor];
-  [telephoneFieldLabel setBackgroundColor:selectedColor];
-  [bdayField setBackgroundColor:selectedColor];
-  [bdayFieldLabel setBackgroundColor:selectedColor];
+
+  [startDateTextField setBackgroundColor:selectedColor];
+  [dashTextField setBackgroundColor:selectedColor];
+  [endDateTextField setBackgroundColor:selectedColor];
+  [degreeTextField setBackgroundColor:selectedColor];
+  [institutionNameTextField setBackgroundColor:selectedColor];
 
   // Edit button
   [self addSubview:editBtn];
@@ -129,114 +141,106 @@
 
 -(void)mouseExited:(CPEvent)anEvent {
   var unselectedColor = [CPColor whiteColor];
+
+
   [self setBackgroundColor:unselectedColor];
-  [addressField setBackgroundColor:unselectedColor];
-  [addressFieldLabel setBackgroundColor:unselectedColor];
-  [nameField setBackgroundColor:unselectedColor];
-  [telephoneField setBackgroundColor:unselectedColor];
-  [telephoneFieldLabel setBackgroundColor:unselectedColor];
-  [bdayField setBackgroundColor:unselectedColor];
-  [bdayFieldLabel setBackgroundColor:unselectedColor];
+
+  [startDateTextField setBackgroundColor:unselectedColor];
+  [dashTextField setBackgroundColor:unselectedColor];
+  [endDateTextField setBackgroundColor:unselectedColor];
+  [degreeTextField setBackgroundColor:unselectedColor];
+  [institutionNameTextField setBackgroundColor:unselectedColor];
 
   [editBtn removeFromSuperview];
 }
 
--(void)editCandidate:(id)sender {
+-(void)editNewEducation {
+  isCreation = YES;
+  [self editEducation:self];
+}
 
+-(void)editEducation:(id)sender {
   editWin = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,270) styleMask:CPTitledWindowMask];
   var contentView = [editWin contentView];
   [contentView setBackgroundColor:[CPColor colorWithHexString:@"e6e8ea"]];
 
-  var xPosLabel = 20;
-  var xPosField = 120;
-  var widthLabel = 100;
-  var widthField = 340;
+  var xPosLabel = 30;
+  var xPosField = 170;
+  var widthLabel = 140;
+  var widthField = 300;
   var initialVPos = 40;
-  var vInc = 30;
+  var vInc = 25;
   var height = 20;
 
   [editWin makeKeyAndOrderFront:self];
-  var title = [[CPString alloc] initWithString:@"Edit profile for: "];
-  [editWin setTitle:[title stringByAppendingString:[candidate fullName]]];
+  var title = @"Academic formation ";
+  [editWin setTitle:title];
   [CPApp runModalForWindow:editWin];
 
-  editNameFieldLabel = [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editNameFieldLabel setStringValue:@"Name"];
-  [editNameFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
 
-  editNameField = [[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editNameField setStringValue:[candidate givenName]];
-  [editNameField setFont:[CPFont fontWithName:@"Arial" size:14]];
-  [editNameField setBackgroundColor:[CPColor whiteColor]];
-  [editNameField setEditable:YES];
-
+  editDegreeLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
+  [editDegreeLabel setStringValue:@"Degree"];
+  [editDegreeLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  editDegreeTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
+  [editDegreeTextField setBackgroundColor:[CPColor whiteColor]];
+  [editDegreeTextField setEditable:YES];
+  [editDegreeTextField setStringValue:[education degreeType]];
 
   initialVPos = initialVPos + vInc;
 
+  editStartDatePickerLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos+5, widthLabel, height)];
+  [editStartDatePickerLabel setStringValue:@"Start date"];
+  [editStartDatePickerLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  editStartDatePicker =[[DatePicker alloc] initWithFrame:CGRectMake(xPosField -5, initialVPos, widthField+5, height)];
+  [editStartDatePicker displayPreset:1];
+  if([education startDate]) {
+    //console.log([education startDate]);
+    //[editStartDatePicker setDate:[CPDate initWithString:[education startDate]]];
+  }
 
-  editFamilyNameFieldLabel = [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editFamilyNameFieldLabel setStringValue:@"FamilyName"];
-  [editFamilyNameFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  initialVPos = initialVPos + vInc + 10;
 
-  editFamilyNameField = [[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editFamilyNameField setFont:[CPFont fontWithName:@"Arial" size:14]];
-  [editFamilyNameField setStringValue:[candidate familyName]];
-  [editFamilyNameField setBackgroundColor:[CPColor whiteColor]];
-  [editFamilyNameField setEditable:YES];
+  editEndDatePickerLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
+  [editEndDatePickerLabel setStringValue:@"End date"];
+  [editEndDatePickerLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  editEndDatePicker =[[DatePicker alloc] initWithFrame:CGRectMake(xPosField-5, initialVPos, widthField+5, height)];
+  [editEndDatePicker displayPreset:1];
+  if([education endDate]) {
+    //console.log([education endDate]);
+    //[editEndDatePicker setDate:[CPDate initWithString:[education endDate]]];
+  }
 
-  initialVPos = initialVPos + vInc;
+  initialVPos = initialVPos + vInc + 10;
 
+  editInstitutionNameLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
+  [editInstitutionNameLabel setStringValue:@"Institution name"];
+  [editInstitutionNameLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  editInstitutionNameTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
+  [editInstitutionNameTextField setBackgroundColor:[CPColor whiteColor]];
+  [editInstitutionNameTextField setEditable:YES];
+  [editInstitutionNameTextField setStringValue:[education studiedInOrganizationName]];
 
-  editAddressFieldLabel = [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editAddressFieldLabel setStringValue:@"Address"];
-  [editAddressFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  initialVPos = initialVPos + vInc + 5;
 
-  editAddressField = [[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editAddressField setStringValue:[candidate address]];
-  [editAddressField setFont:[CPFont fontWithName:@"Arial" size:14]];
-  [editAddressField setBackgroundColor:[CPColor whiteColor]];
-  [editAddressField setEditable:YES];
-
-  initialVPos = initialVPos + vInc;
-
-  editTelephoneFieldLabel = [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editTelephoneFieldLabel setStringValue:@"Telephone"];
-  [editTelephoneFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
-
-  editTelephoneField = [[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editTelephoneField setStringValue:[candidate telephone]];
-  [editTelephoneField setFont:[CPFont fontWithName:@"Arial" size:14]];
-  [editTelephoneField setBackgroundColor:[CPColor whiteColor]];
-  [editTelephoneField setEditable:YES];
-
-  initialVPos = initialVPos + vInc;
-
-
-  editBDayFieldLabel = [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editBDayFieldLabel setStringValue:@"Birth Day"];
-  [editBDayFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
-
-  editBDayField = [[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editBDayField setStringValue:[candidate birthDay]];
-  [editBDayField setFont:[CPFont fontWithName:@"Arial" size:14]];
-  [editBDayField setBackgroundColor:[CPColor whiteColor]];
-  [editBDayField setEditable:YES];
+  editInstitutionUriLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
+  [editInstitutionUriLabel setStringValue:@"Institution URI"];
+  [editInstitutionUriLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  editInstitutionUriTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
+  [editInstitutionUriTextField setBackgroundColor:[CPColor whiteColor]];
+  [editInstitutionUriTextField setEditable:YES];
 
   initialVPos = initialVPos + vInc;
 
-
-  [contentView addSubview:editNameFieldLabel];
-  [contentView addSubview:editNameField];
-  [contentView addSubview:editFamilyNameFieldLabel];
-  [contentView addSubview:editFamilyNameField];
-  [contentView addSubview:editAddressFieldLabel];
-  [contentView addSubview:editAddressField];
-  [contentView addSubview:editTelephoneFieldLabel];
-  [contentView addSubview:editTelephoneField];
-  [contentView addSubview:editBDayFieldLabel];
-  [contentView addSubview:editBDayField];
-
-
+  [contentView addSubview:editStartDatePickerLabel];
+  [contentView addSubview:editStartDatePicker];
+  [contentView addSubview:editEndDatePickerLabel];
+  [contentView addSubview:editEndDatePicker];
+  [contentView addSubview:editDegreeLabel];
+  [contentView addSubview:editDegreeTextField];
+  [contentView addSubview:editInstitutionNameLabel];
+  [contentView addSubview:editInstitutionNameTextField];
+  [contentView addSubview:editInstitutionUriLabel];
+  [contentView addSubview:editInstitutionUriTextField];
 
 
   var okButton = [[CPButton alloc] initWithFrame:CGRectMake(160,initialVPos+30, 70, 24)];
@@ -251,31 +255,58 @@
 
   // actions
 
-  [cancelButton setTarget:self];
-  [cancelButton setAction:@selector(cancelCandidateEdit:)]
-
   [okButton setTarget:self];
-  [okButton setAction:@selector(doCandidateEdit:)]
+  [okButton setAction:@selector(doEducationEdit:)];
+
+  if(isCreation) {
+    [cancelButton setTarget:self];
+    [cancelButton setAction:@selector(cancelEducationCreation:)];
+
+  } else {
+    [cancelButton setTarget:self];
+    [cancelButton setAction:@selector(cancelEducationEdit:)];
+
+  }
 
 }
 
 
--(void)cancelCandidateEdit:(id)sender {
+-(void)cancelEducationEdit:(id)sender {
   [editWin close];
   [CPApp abortModal];
 }
 
--(void)doCandidateEdit:(id)sender {
-  [candidate setGivenName:[editNameField stringValue]];
-  [candidate setFamilyName:[editFamilyNameField stringValue]];
-  [candidate setTelephone:[editTelephoneField stringValue]];
-  [candidate setAddress:[editAddressField stringValue]];
-  [candidate setBirthDay:[editBDayField stringValue]];
+-(void)cancelEducationCreation:(id)sender {
+  [editWin close];
+  [CPApp abortModal];
+  [self removeFromSuperview];
+  [delegate removeEducation:education];
+}
+
+-(void)doEducationEdit:(id)sender {
+  var date = [editStartDatePicker date];
+  var dateString = date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
+  [education setStartDate:dateString];
+
+  date = [editEndDatePicker date];
+  dateString = date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
+  [education setEndDate:dateString];
+
+
+  [education setDegreeType:[editDegreeTextField stringValue]];
+  [education setStudiedInOrganizationName:[editInstitutionNameTextField stringValue]];
 
   [editWin close];
   [CPApp abortModal];
 
-  [self updateCandidate];
+  debugger;
+
+  if(isCreation) {
+    [delegate educationAdded:self];
+    isCreation = NO;
+  }
+
+  [self updateEducation];
 }
 
 @end
