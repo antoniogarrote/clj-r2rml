@@ -8,10 +8,10 @@
 
 @import <AppKit/AppKit.j>
 @import <Foundation/Foundation.j>
-@import "Education.j"
+@import "Job.j"
 @import "DatePicker.j"
 
-@implementation EducationView : CPView
+@implementation JobView : CPView
 {
 
   BOOL isCreation;
@@ -19,8 +19,9 @@
   CPTextField startDateTextField;
   CPTextField endDateTextField;
   CPTextField dashTextField;
-  CPTextField degreeTextField;
-  CPTextField institutionNameTextField;
+  CPTextField jobTitleTextField;
+  CPTextField jobDescriptionTextField;
+  CPTextField companyTextField;
 
   CPButton    editBtn;
   Education   education;
@@ -32,12 +33,12 @@
   CPTextField editStartDatePickerLabel;
   DatePicker  editEndDatePicker;
   CPTextField editEndDatePickerLabel;
-  CPTextField editDegreeTextField;
-  CPTextField editDegreeLabel;
-  CPTextField editInstitutionName;
-  CPTextField editInstitutionNameLabel;
-  CPTextField editInstitutionUri;
-  CPTextField editInstitutionUriLabel;
+  CPTextField editJobTitleTextField;
+  CPTextField editJobTitleLabel;
+  CPTextField editCompanyName;
+  CPTextField editCompanyNameLabel;
+  CPTextField editJobDescriptionTextField;
+  CPTextField editJobDescriptionLabel;
 
   id delegate;
 }
@@ -70,16 +71,15 @@
       [endDateTextField setBackgroundColor:[CPColor whiteColor]];
       [endDateTextField setFont:[CPFont fontWithName:@"Arial" size:15]];
 
-      degreeTextField  = [[CPTextField alloc] initWithFrame:CGRectMake(230, topOffset, formWidth, 30)];
-      [degreeTextField setBackgroundColor:[CPColor whiteColor]];
-      [degreeTextField setFont:[CPFont boldFontWithName:@"Arial" size:18]];
-
+      jobTitleTextField  = [[CPTextField alloc] initWithFrame:CGRectMake(230, topOffset, formWidth, 30)];
+      [jobTitleTextField setBackgroundColor:[CPColor whiteColor]];
+      [jobTitleTextField setFont:[CPFont boldFontWithName:@"Arial" size:18]];
 
       topOffset = topOffset + height;
 
-      institutionNameTextField = [[CPTextField alloc] initWithFrame:CGRectMake(230, topOffset, formWidth, height)];
-      [institutionNameTextField setBackgroundColor:[CPColor whiteColor]];
-      [institutionNameTextField setFont:[CPFont fontWithName:@"Arial" size:15]];
+      companyTextField = [[CPTextField alloc] initWithFrame:CGRectMake(230, topOffset, formWidth, height)];
+      [companyTextField setBackgroundColor:[CPColor whiteColor]];
+      [companyTextField setFont:[CPFont fontWithName:@"Arial" size:15]];
 
       topOffset = topOffset + height;
 
@@ -94,14 +94,14 @@
     return self;
 }
 
--(void)updateEducation {
+-(void)updateJob {
   [startDateTextField setStringValue:[education startDate]];
   [endDateTextField setStringValue:[education endDate]];
-  [degreeTextField setStringValue:[education degreeType]];
-  [institutionNameTextField setStringValue:[education studiedInOrganizationName]];
+  [jobTitleTextField setStringValue:[education jobTitleType]];
+  [companyTextField setStringValue:[education employedIn]];
 }
 
--(void)setEducation:(Education)anEducation
+-(void)setJob:(Job)aJob
 {
 
   education = anEducation;
@@ -112,7 +112,7 @@
   [self addSubview:startDateTextField];
   [self addSubview:dashTextField];
   [self addSubview:endDateTextField];
-  [self addSubview:degreeTextField];
+  [self addSubview:jobTitleTextField];
   [self addSubview:institutionNameTextField];
 
   [self updateEducation];
@@ -131,7 +131,7 @@
   [startDateTextField setBackgroundColor:selectedColor];
   [dashTextField setBackgroundColor:selectedColor];
   [endDateTextField setBackgroundColor:selectedColor];
-  [degreeTextField setBackgroundColor:selectedColor];
+  [jobTitleTextField setBackgroundColor:selectedColor];
   [institutionNameTextField setBackgroundColor:selectedColor];
 
   // Edit button
@@ -148,7 +148,7 @@
   [startDateTextField setBackgroundColor:unselectedColor];
   [dashTextField setBackgroundColor:unselectedColor];
   [endDateTextField setBackgroundColor:unselectedColor];
-  [degreeTextField setBackgroundColor:unselectedColor];
+  [jobTitleTextField setBackgroundColor:unselectedColor];
   [institutionNameTextField setBackgroundColor:unselectedColor];
 
   [editBtn removeFromSuperview];
@@ -178,13 +178,13 @@
   [CPApp runModalForWindow:editWin];
 
 
-  editDegreeLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editDegreeLabel setStringValue:@"Degree"];
-  [editDegreeLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
-  editDegreeTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editDegreeTextField setBackgroundColor:[CPColor whiteColor]];
-  [editDegreeTextField setEditable:YES];
-  [editDegreeTextField setStringValue:[education degreeType]];
+  editJobTitleLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
+  [editJobTitleLabel setStringValue:@"JobTitle"];
+  [editJobTitleLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  editJobTitleTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
+  [editJobTitleTextField setBackgroundColor:[CPColor whiteColor]];
+  [editJobTitleTextField setEditable:YES];
+  [editJobTitleTextField setStringValue:[education jobTitleType]];
 
   initialVPos = initialVPos + vInc;
 
@@ -235,8 +235,8 @@
   [contentView addSubview:editStartDatePicker];
   [contentView addSubview:editEndDatePickerLabel];
   [contentView addSubview:editEndDatePicker];
-  [contentView addSubview:editDegreeLabel];
-  [contentView addSubview:editDegreeTextField];
+  [contentView addSubview:editJobTitleLabel];
+  [contentView addSubview:editJobTitleTextField];
   [contentView addSubview:editInstitutionNameLabel];
   [contentView addSubview:editInstitutionNameTextField];
   [contentView addSubview:editInstitutionUriLabel];
@@ -293,7 +293,7 @@
   [education setEndDate:dateString];
 
 
-  [education setDegreeType:[editDegreeTextField stringValue]];
+  [education setJobTitleType:[editJobTitleTextField stringValue]];
   [education setStudiedInOrganizationName:[editInstitutionNameTextField stringValue]];
 
   [editWin close];

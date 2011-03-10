@@ -88,7 +88,7 @@
       {:_uri "http://localhost:8080/api/candidates/{id}/educations"
        :type :Resource
        :uriTemplate "http://localhost:8080/api/candidates/{id}/educations"
-       :mappedUriTemplate "http://localhost:8080/api/candidates/{id}"
+       :mappedUriTemplate "http://localhost:8080/api/candidates/{id}#self"
        :endPoint {:type :R2RMLMapping
                   :has_r2rml_mapping {:logical-table "educations"
                                       :subject-map     {:column "uri"}
@@ -104,7 +104,7 @@
                                                             {:property "http://rdfs.org/resume-rdf/degreeType"
                                                              :column   "titulation"
                                                              :datatype "xsd:string"}
-                                                            {:property "http://localhost:8080/api/studiedBy"
+                                                            {:property "http://test.com/api/studiedBy"
                                                              :column   "candidate"
                                                              :datatype "http://xmlns.com/foaf/0.1/Person"}]}
                   :has_r2rml_graph {:column-graph "candidate" }}
@@ -135,7 +135,7 @@
                                                             {:property "http://rdfs.org/resume-rdf/degreeType"
                                                              :column   "titulation"
                                                              :datatype "xsd:string"}
-                                                            {:property "http://localhost:8080/api/studiedBy"
+                                                            {:property "http://test.com/api/studiedBy"
                                                              :column   "candidate"
                                                              :datatype "http://xmlns.com/foaf/0.1/Person"}]}
                   :has_r2rml_graph {:column-graph "uri"}}
@@ -174,7 +174,68 @@
                                                              :datatype "xsd:string"}]}
                   :has_r2rml_graph {:column-graph "uri"}}
        :hasOperation [:GET]}
-
+      
+      ;; Jobs
+      {:_uri "http://localhost:8080/api/candidates/{id}/jobs"
+       :type :Resource
+       :uriTemplate "http://localhost:8080/api/candidates/{id}/jobs"
+       :mappedUriTemplate "http://localhost:8080/api/candidates/{id}#self"
+       :endPoint {:type :R2RMLMapping
+                  :has_r2rml_mapping {:logical-table "jobs"
+                                      :subject-map     {:column "uri"}
+                                      :property-object-map [{:property "http://rdfs.org/resume-rdf/startDate"
+                                                             :column   "start_date"
+                                                             :datatype "xsd:date"}
+                                                            {:property "http://rdfs.org/resume-rdf/endDate"
+                                                             :column   "end_date"
+                                                             :datatype "xsd:string"}
+                                                            {:property "http://rdfs.org/resume-rdf/employedIn"
+                                                             :column   "company"
+                                                             :datatype "http://www.w3.org/2006/vcard/ns#Company"}
+                                                            {:property "http://rdfs.org/resume-rdf/jobTitle"
+                                                             :column   "position"
+                                                             :datatype "xsd:string"}
+                                                            {:property "http://rdfs.org/resume-rdf/jobDescription"
+                                                             :column   "description"
+                                                             :datatype "xsd:string"}
+                                                            {:property "http://rdfs.org/resume-rdf/heldBy"
+                                                             :column   "candidate"
+                                                             :datatype "http://xmlns.com/foaf/0.1/Person"}]}
+                  :has_r2rml_graph {:column-graph "candidate" }}
+       :hasOperation [:GET :POST]
+       :namedGraphCreationMechanism {:type :NamedGraphCreationMechanism
+                                     :uriTemplate "http://localhost:8080/api/candidates/{id}/jobs/{job_id}"
+                                     :mapped_uri_parts [{:mapped_component_value "job_id"
+                                                         :uri_generator :UniqueIdInt}
+                                                        {:mapped_component_value "id"
+                                                         :uri_generator :Params}]}}
+      {:_uri "http://localhost:8080/api/candidates/{candidate_id}/jobs/{id}#self"
+       :type :Resource
+       :uriTemplate "http://localhost:8080/api/candidates/{candidate_id}/jobs/{id}#self"
+       :endPoint {:type :R2RMLMapping
+                  :has_r2rml_mapping {:logical-table "jobs"
+                                      :subject-map     {:column "uri"}
+                                      :property-object-map [{:property "http://rdfs.org/resume-rdf/startDate"
+                                                             :column   "start_date"
+                                                             :datatype "xsd:date"}
+                                                            {:property "http://rdfs.org/resume-rdf/endDate"
+                                                             :column   "end_date"
+                                                             :datatype "xsd:string"}
+                                                            {:property "http://rdfs.org/resume-rdf/employedIn"
+                                                             :column   "company"
+                                                             :datatype "http://rdfs.org/resume-rdf/Company"}
+                                                            {:property "http://rdfs.org/resume-rdf/jobTitle"
+                                                             :column   "position"
+                                                             :datatype "xsd:string"}
+                                                            {:property "http://rdfs.org/resume-rdf/jobDescription"
+                                                             :column   "description"
+                                                             :datatype "xsd:string"}
+                                                            {:property "http://rdfs.org/resume-rdf/heldBy"
+                                                             :column   "candidate"
+                                                             :datatype "http://xmlns.com/foaf/0.1/Person"}]}
+                  :has_r2rml_graph {:column-graph "uri" }}
+       :hasOperation [:GET :PUT :DELETE]}
+      
       ])
 
 
@@ -218,4 +279,6 @@
       wrap-overload-content-type
       wrap-params))
 
-(run-jetty  (my-api (var main-routes)) {:port 8080})
+;(run-jetty  (my-api (var main-routes)) {:port 8080})
+
+

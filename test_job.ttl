@@ -1,0 +1,8 @@
+@prefix cv:<http://rdfs.org/resume-rdf/> .
+
+[ cv:startDate "01-09-2000" ;
+  cv:endDate "01-07-2003" ;
+  cv:employedIn <http://xing.com/> ;
+  cv:jobTitle "Senior Developer" ;
+  cv:jobDescription "dull ruby code writting" ;
+  cv:heldBy <http://localhost:8080/api/candidates/antonio-garrotehernndez-409588#self> ]

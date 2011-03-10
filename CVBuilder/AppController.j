@@ -83,8 +83,8 @@
 
   // Testing loading a candidate
   var aCandidate = [[Candidate alloc] init];
-  //var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrotehernndez-409588"
-  var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrote-457906"
+  var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrotehernndez-409588"
+  //var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrote-457906"
   [aCandidate loadFromURL:candidateUri withNetworkDelegate:self];
 
   // Uncomment the following line to turn on the standard menu bar.

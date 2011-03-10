@@ -161,6 +161,13 @@
 (defn conflicting-contexts?
   "Checks if two column context are conflicting"
   ([column-context-a column-context-b]
+     (println (str "CONFLICTING? " (and (= (:column column-context-a) (:column column-context-b))
+                                        (not= (:value column-context-a) (:value column-context-b)))
+                   " "
+                   [(:column column-context-a) (:column column-context-b)]
+                   " "
+                   [(:value column-context-a) (:value column-context-b)]
+                   ))
      (and (= (:column column-context-a) (:column column-context-b))
           (not= (:value column-context-a) (:value column-context-b)))))
 
@@ -273,7 +280,9 @@
 
 (defn compatible-table-mappers-for-triple
   ([triple table-mappers]
-     (let [compatible-table-mappers (get-compatible-table-mappers triple table-mappers)]
+     (let [_ (println (str "CHECKING COMPATIBILITY OF TRIPLE: " (vec triple)))
+           compatible-table-mappers (get-compatible-table-mappers triple table-mappers)
+           _ (if (empty? compatible-table-mappers) (println (str " -> NO COMPATIBLE")) (println (str " -> COMPATIBLE")))]
        (sort-table-mappers-map compatible-table-mappers))))
 
 (defn get-table-context-in-schema-context
@@ -390,6 +399,7 @@
      (let [grouped-triples (group-triples triples)]
        (loop [grouped-triples grouped-triples
               schema-contexts (:update-schema-contexts update-context)]
+         (println (str "IN LOOP --> " (vec schema-contexts)))
          (if (empty? grouped-triples)
            (assoc update-context :update-schema-contexts schema-contexts)
            (recur (rest grouped-triples)
@@ -430,7 +440,8 @@
            initial-update-context (UpdateContext.
                                    table-mappers
                                    [initial-update-schema-context])
-           update-context (generate-update-contexts triples initial-update-context)]
+           update-context (generate-update-contexts triples initial-update-context)
+           _ (println (str "GENERATED UPDATE-CONTEXT: " (vec update-context)))]
        (if (nil? update-context)
          (throw (Exception. "Cannot generate update contexts for insertion"))
          (let [update-schema-context (first (:update-schema-contexts update-context))

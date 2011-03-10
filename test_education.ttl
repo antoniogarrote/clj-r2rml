@@ -6,4 +6,4 @@
   cv:endDate "01-07-2003" ;
   cv:studiedIn <http://test.com/api/organizations/133470#self> ;
   cv:degreeType "Ingenieria Tecnica Informatica Sistemas" ;
-  <http://test.com/api/studiedBy> <http://test.com/api/candidates/antonio-garrotehernndez-2070> ]
+  <http://test.com/api/studiedBy> <http://localhost:8080/api/candidates/antonio-garrotehernndez-409588#self> ]
