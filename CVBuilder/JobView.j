@@ -1,5 +1,5 @@
 /*
- *  EducationView.j
+ *  JobView.j
  *  CVBuilder
  *
  *  Created by Antonio Garrote on 3/9/11.
@@ -10,6 +10,7 @@
 @import <Foundation/Foundation.j>
 @import "Job.j"
 @import "DatePicker.j"
+@import "LPMultiLineTextField.j"
 
 @implementation JobView : CPView
 {
@@ -24,8 +25,10 @@
   CPTextField companyTextField;
 
   CPButton    editBtn;
-  Education   education;
+  Job   job;
 
+
+  id linesDescOffset;
 
   CPWindow    editWin;
 
@@ -37,16 +40,17 @@
   CPTextField editJobTitleLabel;
   CPTextField editCompanyName;
   CPTextField editCompanyNameLabel;
-  CPTextField editJobDescriptionTextField;
+  LPMultiLineTextField editJobDescriptionTextField;
   CPTextField editJobDescriptionLabel;
 
   id delegate;
 }
 
-- (id)initWithFrame:(CGRect)frame andDelegate:aDelegate {
+- (id)initWithFrame:(CGRect)frame andDelegate:aDelegate andJob:aJob{
     self = [super initWithFrame:frame];
 
     if(self) {
+
       isCreation = false;
 
       delegate  = aDelegate;
@@ -83,28 +87,44 @@
 
       topOffset = topOffset + height;
 
+      var descText = [aJob jobDescription] || "";
+      var lines = descText.split("\n").length;
+      linesDescOffset = 0;
+      console.log("Found "+ linesDescOffset + " lines");
+      if(lines > 1) {
+        linesDescOffset = lines * 20;
+      }
+
+      jobDescriptionTextField = [[CPTextField alloc] initWithFrame:CGRectMake(230, topOffset, formWidth, height + linesDescOffset)];
+      [jobDescriptionTextField setBackgroundColor:[CPColor whiteColor]];
+      [jobDescriptionTextField setFont:[CPFont fontWithName:@"Arial" size:15]];
+
 
       editBtn = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 30, 80, 24)];
 
       [editBtn setTitle:@"Edit"];
       [editBtn setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/edit.png"]];
       [editBtn setTarget:self];
-      [editBtn setAction:@selector(editEducation:)];
+      [editBtn setAction:@selector(editJob:)];
+
+      [self setJob:aJob];
+
     }
     return self;
 }
 
 -(void)updateJob {
-  [startDateTextField setStringValue:[education startDate]];
-  [endDateTextField setStringValue:[education endDate]];
-  [jobTitleTextField setStringValue:[education jobTitleType]];
-  [companyTextField setStringValue:[education employedIn]];
+  [startDateTextField setStringValue:[job startDate]];
+  [endDateTextField setStringValue:[job endDate]];
+  [jobTitleTextField setStringValue:[job jobTitle]];
+  [companyTextField setStringValue:[job employedIn]];
+  [jobDescriptionTextField setStringValue:[job jobDescription]];
 }
 
 -(void)setJob:(Job)aJob
 {
 
-  education = anEducation;
+  job = aJob;
 
   // Created the UI components
 
@@ -113,9 +133,10 @@
   [self addSubview:dashTextField];
   [self addSubview:endDateTextField];
   [self addSubview:jobTitleTextField];
-  [self addSubview:institutionNameTextField];
+  [self addSubview:jobDescriptionTextField];
+  [self addSubview:companyTextField];
 
-  [self updateEducation];
+  [self updateJob];
 }
 
 - (void)drawRect:(CPRect)aRect {
@@ -132,7 +153,8 @@
   [dashTextField setBackgroundColor:selectedColor];
   [endDateTextField setBackgroundColor:selectedColor];
   [jobTitleTextField setBackgroundColor:selectedColor];
-  [institutionNameTextField setBackgroundColor:selectedColor];
+  [jobDescriptionTextField setBackgroundColor:selectedColor];
+  [companyTextField setBackgroundColor:selectedColor];
 
   // Edit button
   [self addSubview:editBtn];
@@ -149,18 +171,21 @@
   [dashTextField setBackgroundColor:unselectedColor];
   [endDateTextField setBackgroundColor:unselectedColor];
   [jobTitleTextField setBackgroundColor:unselectedColor];
-  [institutionNameTextField setBackgroundColor:unselectedColor];
+  [jobDescriptionTextField setBackgroundColor:unselectedColor];
+  [companyTextField setBackgroundColor:unselectedColor];
+  [jobDescriptionTextField setBackgroundColor:unselectedColor];
+  [companyTextField setBackgroundColor:unselectedColor];
 
   [editBtn removeFromSuperview];
 }
 
--(void)editNewEducation {
+-(void)editNewJob {
   isCreation = YES;
-  [self editEducation:self];
+  [self editJob:self];
 }
 
--(void)editEducation:(id)sender {
-  editWin = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,270) styleMask:CPTitledWindowMask];
+-(void)editJob:(id)sender {
+  editWin = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,290) styleMask:CPTitledWindowMask];
   var contentView = [editWin contentView];
   [contentView setBackgroundColor:[CPColor colorWithHexString:@"e6e8ea"]];
 
@@ -173,18 +198,18 @@
   var height = 20;
 
   [editWin makeKeyAndOrderFront:self];
-  var title = @"Academic formation ";
+  var title = @"Work experience ";
   [editWin setTitle:title];
   [CPApp runModalForWindow:editWin];
 
 
   editJobTitleLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editJobTitleLabel setStringValue:@"JobTitle"];
+  [editJobTitleLabel setStringValue:@"Position"];
   [editJobTitleLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
   editJobTitleTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
   [editJobTitleTextField setBackgroundColor:[CPColor whiteColor]];
   [editJobTitleTextField setEditable:YES];
-  [editJobTitleTextField setStringValue:[education jobTitleType]];
+  [editJobTitleTextField setStringValue:[job jobTitle]];
 
   initialVPos = initialVPos + vInc;
 
@@ -193,9 +218,9 @@
   [editStartDatePickerLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
   editStartDatePicker =[[DatePicker alloc] initWithFrame:CGRectMake(xPosField -5, initialVPos, widthField+5, height)];
   [editStartDatePicker displayPreset:1];
-  if([education startDate]) {
+  if([job startDate]) {
     // @todo Format date here
-    //[editStartDatePicker setDate:[CPDate initWithString:[education startDate]]];
+    //[editStartDatePicker setDate:[CPDate initWithString:[job startDate]]];
   }
 
   initialVPos = initialVPos + vInc + 10;
@@ -205,31 +230,32 @@
   [editEndDatePickerLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
   editEndDatePicker =[[DatePicker alloc] initWithFrame:CGRectMake(xPosField-5, initialVPos, widthField+5, height)];
   [editEndDatePicker displayPreset:1];
-  if([education endDate]) {
+  if([job endDate]) {
     // @todo Format date here
-    //[editEndDatePicker setDate:[CPDate initWithString:[education endDate]]];
+    //[editEndDatePicker setDate:[CPDate initWithString:[job endDate]]];
   }
 
   initialVPos = initialVPos + vInc + 10;
 
-  editInstitutionNameLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editInstitutionNameLabel setStringValue:@"Institution name"];
-  [editInstitutionNameLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
-  editInstitutionNameTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editInstitutionNameTextField setBackgroundColor:[CPColor whiteColor]];
-  [editInstitutionNameTextField setEditable:YES];
-  [editInstitutionNameTextField setStringValue:[education studiedInOrganizationName]];
+  editCompanyNameLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
+  [editCompanyNameLabel setStringValue:@"Company"];
+  [editCompanyNameLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  editCompanyNameTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
+  [editCompanyNameTextField setBackgroundColor:[CPColor whiteColor]];
+  [editCompanyNameTextField setEditable:YES];
+  [editCompanyNameTextField setStringValue:[job employedIn]];
 
   initialVPos = initialVPos + vInc + 5;
 
-  editInstitutionUriLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editInstitutionUriLabel setStringValue:@"Institution URI"];
-  [editInstitutionUriLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
-  editInstitutionUriTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editInstitutionUriTextField setBackgroundColor:[CPColor whiteColor]];
-  [editInstitutionUriTextField setEditable:YES];
+  editJobDescriptionLabel = [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
+  [editJobDescriptionLabel setStringValue:@"Description"];
+  [editJobDescriptionLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  editJobDescriptionTextField =[[LPMultiLineTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height * 2.5)];
+  [editJobDescriptionTextField setBackgroundColor:[CPColor whiteColor]];
+  [editJobDescriptionTextField setEditable:YES];
+  [editJobDescriptionTextField setStringValue:[job jobDescription]];
 
-  initialVPos = initialVPos + vInc;
+  initialVPos = initialVPos + vInc + vInc;
 
   [contentView addSubview:editStartDatePickerLabel];
   [contentView addSubview:editStartDatePicker];
@@ -237,10 +263,10 @@
   [contentView addSubview:editEndDatePicker];
   [contentView addSubview:editJobTitleLabel];
   [contentView addSubview:editJobTitleTextField];
-  [contentView addSubview:editInstitutionNameLabel];
-  [contentView addSubview:editInstitutionNameTextField];
-  [contentView addSubview:editInstitutionUriLabel];
-  [contentView addSubview:editInstitutionUriTextField];
+  [contentView addSubview:editCompanyNameLabel];
+  [contentView addSubview:editCompanyNameTextField];
+  [contentView addSubview:editJobDescriptionLabel];
+  [contentView addSubview:editJobDescriptionTextField];
 
 
   var okButton = [[CPButton alloc] initWithFrame:CGRectMake(160,initialVPos+30, 70, 24)];
@@ -256,45 +282,46 @@
   // actions
 
   [okButton setTarget:self];
-  [okButton setAction:@selector(doEducationEdit:)];
+  [okButton setAction:@selector(doJobEdit:)];
 
   if(isCreation) {
     [cancelButton setTarget:self];
-    [cancelButton setAction:@selector(cancelEducationCreation:)];
+    [cancelButton setAction:@selector(cancelJobCreation:)];
 
   } else {
     [cancelButton setTarget:self];
-    [cancelButton setAction:@selector(cancelEducationEdit:)];
+    [cancelButton setAction:@selector(cancelJobEdit:)];
 
   }
 
 }
 
 
--(void)cancelEducationEdit:(id)sender {
+-(void)cancelJobEdit:(id)sender {
   [editWin close];
   [CPApp abortModal];
 }
 
--(void)cancelEducationCreation:(id)sender {
+-(void)cancelJobCreation:(id)sender {
   [editWin close];
   [CPApp abortModal];
   [self removeFromSuperview];
-  [delegate removeEducation:education];
+  [delegate removeJob:job];
 }
 
--(void)doEducationEdit:(id)sender {
+-(void)doJobEdit:(id)sender {
   var date = [editStartDatePicker date];
   var dateString = date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear();
-  [education setStartDate:dateString];
+  [job setStartDate:dateString];
 
   date = [editEndDatePicker date];
   dateString = date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear();
-  [education setEndDate:dateString];
+  [job setEndDate:dateString];
 
 
-  [education setJobTitleType:[editJobTitleTextField stringValue]];
-  [education setStudiedInOrganizationName:[editInstitutionNameTextField stringValue]];
+  [job setJobTitle:[editJobTitleTextField stringValue]];
+  [job setEmployedIn:[editCompanyNameTextField stringValue]];
+  [job setJobDescription:[editJobDescriptionTextField stringValue]];
 
   [editWin close];
   [CPApp abortModal];
@@ -302,11 +329,11 @@
   debugger;
 
   if(isCreation) {
-    [delegate educationAdded:self];
+    [delegate jobAdded:self];
     isCreation = NO;
   }
 
-  [self updateEducation];
+  [self updateJob];
 }
 
 @end

@@ -17,38 +17,51 @@
   self = [super init];
 
   if(self) {
-    triples = {'#':{cvapi: "http://test.com/api/",
+    triples = {'#':{cvapi: [Backend defaultNs],
                     cv: "http://rdfs.org/resume-rdf/"}};
 
     triples["cvapi:studiedBy"] = [aCandidate uri];
-    endpoint = [[aCandidate uri] stringByAppendingString: @"/educations"];
+    var uriTmp = [aCandidate uri];
+    uriTmp = uriTmp.split("#")[0];
+    uriTmp = uriTmp.replace("cvapi:",[Backend apiEndpoint]+"/");
+    endpoint = [uriTmp stringByAppendingString: @"/educations"];
   }
   return self;
+}
+
+-(CPString)kind
+{
+  return "Education";
 }
 
 -(void)setStartDate:(CPString)startDate
 {
   triples["cv:startDate"] = startDate;
+  [self modified];
 }
 
 -(void)setEndDate:(CPString)endDate
 {
   triples["cv:endDate"] = endDate;
+  [self modified];
 }
 
 -(void)setStudiedInOrganizationName:(Organization)anOrganization
 {
   triples["cv:studiedIn"] = anOrganization;
+  [self modified];
 }
 
 -(void)setDegreeType:(CPString)degree
 {
   triples["cv:degreeType"] = degree;
+  [self modified];
 }
 
 -(void)setStudiedBy:(Candidate)aCandidate
 {
   triples["cvapi:studiedBy"] = [aCandidate uri];
+  [self modified];
 }
 
 -(id)uri

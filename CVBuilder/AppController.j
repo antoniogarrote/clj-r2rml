@@ -8,19 +8,26 @@
 
 @import <Foundation/CPObject.j>
 @import <AppKit/CPAccordionView.j>
+@import "SyncController.j"
+@import "TriplesController.j"
 @import "Candidate.j"
 @import "CandidateView.j"
 @import "Education.j"
 @import "EducationView.j"
+@import "Job.j"
+@import "JobView.j"
 @import "Backend.j"
 
 @implementation AppController : CPObject
 {
   Candidate candidate;
   CPMutableArray educations;
+  CPMutableArray jobs;
 
   CandidateView candidateView;
   CPView contentView;
+  id theWindow;
+  CPScrollView scrollView;
   CPToolbar toolbar;
 
   CPString EducationItemIdentifier;
@@ -40,17 +47,22 @@
 {
   // data
 
-  candidate = NULL;
+  candidate  = NULL;
   educations = [[CPMutableArray alloc] init];
+  jobs       = [[CPMutableArray alloc] init];
 
   // views
 
-  var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
-  contentView = [theWindow contentView];
-
+  theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
+  var canvas = [theWindow contentView];
+  scrollView = [[CPScrollView alloc] initWithFrame:[[theWindow contentView] frame]];
+  [scrollView setAutohidesScrollers:YES];
+  [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+  [[theWindow contentView] addSubview:scrollView];
   [theWindow setAcceptsMouseMovedEvents:YES];
 
-
+  contentView = [[CPView alloc] initWithFrame:[[theWindow contentView] frame]];
+  [scrollView setDocumentView:contentView];
   [contentView setBackgroundColor:[CPColor grayColor]];
   [contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
@@ -83,8 +95,9 @@
 
   // Testing loading a candidate
   var aCandidate = [[Candidate alloc] init];
-  var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrotehernndez-409588"
-  //var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrote-457906"
+  [Backend registerNode:aCandidate];
+  //var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrotehernndez-409588"
+  var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrote-457906"
   [aCandidate loadFromURL:candidateUri withNetworkDelegate:self];
 
   // Uncomment the following line to turn on the standard menu bar.
@@ -112,9 +125,12 @@
 
     candidateRectHeight = 200;
     educationRectHeight = 140;
+    jobRectHeight       = 170;
+
     var rect = CGRectMake(marginLeft,marginTopCounter,width, candidateRectHeight);
 
     candidateView = [[CandidateView alloc] initWithFrame:rect];
+    [candidateView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [candidateView setAutoresizingMask:CPViewWidthSizable];
 
     [candidateView setCandidate:candidate];
@@ -122,6 +138,39 @@
     [contentView addSubview:candidateView];
 
     marginTopCounter = marginTopCounter + candidateRectHeight;
+
+    // candidate's work experience
+
+    var jobsCount = [jobs count];
+    if(jobsCount > 0) {
+
+      var jobSectionView = [[CPView alloc] initWithFrame:CGRectMake(marginLeft, marginTopCounter, width, 40)];
+      var sectionLabel = [[CPTextField alloc] initWithFrame:CGRectMake(40,10, 300, 30)];
+      [sectionLabel setStringValue:@"Work Experience"];
+      [sectionLabel setFont:[CPFont boldFontWithName:@"Arial" size:18]];
+      [jobSectionView addSubview:sectionLabel];
+      [jobSectionView setBackgroundColor:[CPColor whiteColor]];
+      [jobSectionView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+      [contentView addSubview:jobSectionView];
+      marginTopCounter = marginTopCounter + 40;
+    }
+    for(var i=0; i<jobsCount; i++) {
+      var job = [jobs objectAtIndex:i];
+
+      var descText = [job jobDescription] || "";
+      var lines = descText.split("\n").length;
+
+      var linesDescOffset = 0;
+      if(lines > 1) {
+        linesDescOffset = lines * 20;
+      }
+
+      var jobView = [[JobView alloc] initWithFrame:CGRectMake(marginLeft, marginTopCounter, width, jobRectHeight + linesDescOffset) andDelegate:self andJob:job];
+      [jobView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+      [contentView addSubview:jobView];
+
+      marginTopCounter = marginTopCounter + jobRectHeight + linesDescOffset;
+    }
 
     // candidate's studies section
 
@@ -132,6 +181,7 @@
       [sectionLabel setStringValue:@"Academic Background"];
       [sectionLabel setFont:[CPFont boldFontWithName:@"Arial" size:18]];
       [educationSectionView addSubview:sectionLabel];
+      [educationSectionView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
       [educationSectionView setBackgroundColor:[CPColor whiteColor]];
       [contentView addSubview:educationSectionView];
       marginTopCounter = marginTopCounter + 40;
@@ -139,20 +189,36 @@
     for(var i=0; i<educationsCount; i++) {
       var education = [educations objectAtIndex:i];
       var educationView = [[EducationView alloc] initWithFrame:CGRectMake(marginLeft, marginTopCounter, width, educationRectHeight) andDelegate:self];
+      [educationView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
       [educationView setEducation:education];
       [contentView addSubview:educationView];
 
       marginTopCounter = marginTopCounter + educationRectHeight;
     }
+
+
   }
 
-
   [self drawPadding];
+
+  [contentView setBounds:CGRectMake(0,
+                                    0,
+                                    CGRectGetWidth([scrollView bounds]),
+                                    marginTopCounter+40)];
+  [contentView setFrame:CGRectMake(0,
+                                   0,
+                                   CGRectGetWidth([scrollView frame]),
+                                   marginTopCounter+40)];
+
+  [scrollView setDocumentView:contentView];
+
 }
 
 -(void)drawPadding {
   if(marginTopCounter < minHeight) {
     var rect = CGRectMake(marginLeft,marginTopCounter,width, (minHeight - marginTopCounter));
+
+    marginTopCounter = minHeight + 20;
 
     paddingView = [[CPView alloc] initWithFrame:rect];
     [paddingView setAutoresizingMask:CPViewWidthSizable];
@@ -162,12 +228,28 @@
   }
 }
 
-// Handling of Candidates
--(void)candidateCreated:(Candidate)aCandidate
+// Handling of graphs
+-(void)graphCreated:(id)aGraph
 {
-  alert(@"A candidate has been created");
+  switch ([aGraph kind]) {
+  case "Candidate" : [self candidateCreated: aGraph]; break;
+  }
 }
 
+-(void)graphLoaded:(id)aGraph
+{
+  debugger;
+  switch ([aGraph kind]) {
+  case "Candidate" : [self candidateLoaded: aGraph]; break;
+  }
+}
+
+-(void)syncFinished:(id)sender
+{
+
+}
+
+// Handling candidates
 -(void)candidateLoaded:(Candidate)aCandidate
 {
   candidate = aCandidate;
@@ -207,30 +289,30 @@
       var image = [[CPImage alloc] initWithContentsOfFile:[mainBundle pathForResource:@"work.png"] size:CPSizeMake(30, 30)];
       [toolbarItem setImage:image];
       [toolbarItem setTarget:self];
-      //[toolbarItem setAction:@selector(remove:)];
+      [toolbarItem setAction:@selector(addJobSection:)];
       [toolbarItem setLabel:"Work Experience"];
       [toolbarItem setMinSize:CGSizeMake(32, 32)];
       [toolbarItem setMaxSize:CGSizeMake(32, 32)];
     } else if(anItemIdentifier == SyncItemIdentifier) {
       var mainBundle = [CPBundle mainBundle];
 
-      var image = [[CPImage alloc] initWithContentsOfFile:[mainBundle pathForResource:@"sync.png"] size:CPSizeMake(30, 30)];
+      var image = [[CPImage alloc] initWithContentsOfFile:[mainBundle pathForResource:@"sync3.png"] size:CPSizeMake(30, 30)];
       [toolbarItem setImage:image];
       [toolbarItem setTarget:self];
-      //[toolbarItem setAction:@selector(remove:)];
+      [toolbarItem setAction:@selector(doSync:)];
       [toolbarItem setLabel:"Sync"];
       [toolbarItem setMinSize:CGSizeMake(32, 32)];
       [toolbarItem setMaxSize:CGSizeMake(32, 32)];
     }  else if(anItemIdentifier == SemanticItemIdentifier) {
       var mainBundle = [CPBundle mainBundle];
 
-      var image = [[CPImage alloc] initWithContentsOfFile:[mainBundle pathForResource:@"education.png"] size:CPSizeMake(30, 30)];
+      var image = [[CPImage alloc] initWithContentsOfFile:[mainBundle pathForResource:@"rdf.png"] size:CPSizeMake(30, 30)];
 //    var highlighted = [[CPImage alloc] initWithContentsOfFile:[mainBundle pathForResource:@"removeHighlighted.png"]
 //                                       size:CPSizeMake(30, 25)];
       [toolbarItem setImage:image];
 //    [toolbarItem setAlternateImage:highlighted];
       [toolbarItem setTarget:self];
-      //[toolbarItem setAction:@selector(remove:)];
+      [toolbarItem setAction:@selector(doTriples:)];
       [toolbarItem setLabel:"Triples"];
       [toolbarItem setMinSize:CGSizeMake(32, 32)];
       [toolbarItem setMaxSize:CGSizeMake(32, 32)];
@@ -241,8 +323,11 @@
 
 -(void)addEducationSection:(id)sender {
   var education  = [[Education alloc] initForCandidate:candidate];
+  [Backend registerNode:education];
+
   [educations addObject:education];
   var educationView = [[EducationView alloc] initWithFrame:CGRectMake(marginLeft, marginTopCounter, width) andDelegate:self];
+  [educationView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
   [educationView setEducation:education];
   [self drawPadding];
   [educationView editNewEducation];
@@ -250,6 +335,32 @@
 
 -(void)educationAdded:(id)sender {
   [self redrawCV];
+}
+
+-(void)addJobSection:(id)sender {
+  var job  = [[Job alloc] initForCandidate:candidate];
+  [Backend registerNode:job];
+
+  [jobs addObject:job];
+  var jobView = [[JobView alloc] initWithFrame:CGRectMake(marginLeft, marginTopCounter, width) andDelegate:self andJob:job];
+  [jobView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+  [self drawPadding];
+  [jobView editNewJob];
+}
+
+-(void)jobAdded:(id)sender {
+  [self redrawCV];
+}
+
+
+-(void)doSync:(id)sender {
+  var sync = [[SyncController alloc] initWithDelegate:self];
+  [sync sync];
+}
+
+-(void)doTriples:(id)sender {
+  var triples = [[TriplesController alloc] initWithDelegate:self];
+  [triples reloadWin];
 }
 
 @end

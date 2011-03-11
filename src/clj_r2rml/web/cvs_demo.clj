@@ -104,7 +104,7 @@
                                                             {:property "http://rdfs.org/resume-rdf/degreeType"
                                                              :column   "titulation"
                                                              :datatype "xsd:string"}
-                                                            {:property "http://test.com/api/studiedBy"
+                                                            {:property "http://localhost:8080/api/studiedBy"
                                                              :column   "candidate"
                                                              :datatype "http://xmlns.com/foaf/0.1/Person"}]}
                   :has_r2rml_graph {:column-graph "candidate" }}
@@ -135,7 +135,7 @@
                                                             {:property "http://rdfs.org/resume-rdf/degreeType"
                                                              :column   "titulation"
                                                              :datatype "xsd:string"}
-                                                            {:property "http://test.com/api/studiedBy"
+                                                            {:property "http://localhost:8080/api/studiedBy"
                                                              :column   "candidate"
                                                              :datatype "http://xmlns.com/foaf/0.1/Person"}]}
                   :has_r2rml_graph {:column-graph "uri"}}
@@ -174,7 +174,7 @@
                                                              :datatype "xsd:string"}]}
                   :has_r2rml_graph {:column-graph "uri"}}
        :hasOperation [:GET]}
-      
+
       ;; Jobs
       {:_uri "http://localhost:8080/api/candidates/{id}/jobs"
        :type :Resource
@@ -235,7 +235,7 @@
                                                              :datatype "http://xmlns.com/foaf/0.1/Person"}]}
                   :has_r2rml_graph {:column-graph "uri" }}
        :hasOperation [:GET :PUT :DELETE]}
-      
+
       ])
 
 

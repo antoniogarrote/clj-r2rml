@@ -17,42 +17,57 @@
   self = [super init];
 
   if(self) {
-    triples = {'#':{cv: "http://rdfs.org/resume-rdf/"}};
+    triples = {'#':{cv: "http://rdfs.org/resume-rdf/",
+                    cvapi: [Backend defaultNs]}};
 
     triples["cv:heldBy"] = [aCandidate uri];
-    endpoint = [[aCandidate uri] stringByAppendingString: @"/jobs"];
+    var uriTmp = [aCandidate uri];
+    uriTmp = uriTmp.split("#")[0];
+    uriTmp = uriTmp.replace("cvapi:",[Backend apiEndpoint]+"/");
+    endpoint = [uriTmp stringByAppendingString: @"/jobs"];
   }
   return self;
+}
+
+-(CPString)kind
+{
+  return "Job";
 }
 
 -(void)setStartDate:(CPString)startDate
 {
   triples["cv:startDate"] = startDate;
+  [self modified];
 }
 
 -(void)setEndDate:(CPString)endDate
 {
   triples["cv:endDate"] = endDate;
+  [self modified];
 }
 
 -(void)setEmployedIn:(Organization)anOrganization
 {
   triples["cv:employedIn"] = anOrganization;
+  [self modified];
 }
 
 -(void)setJobTitle:(CPString)jobTitle
 {
   triples["cv:jobTitle"] = jobTitle;
+  [self modified];
 }
 
 -(void)setJobDescription:(CPString)jobDescription
 {
   triples["cv:jobDescription"] = jobDescription;
+  [self modified];
 }
 
 -(void)setHeldBy:(Candidate)aCandidate
 {
   triples["cv:heldBy"] = [aCandidate uri];
+  [self modified];
 }
 
 -(id)uri

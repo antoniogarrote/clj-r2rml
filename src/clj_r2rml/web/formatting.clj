@@ -92,7 +92,7 @@
 (defn parse-json-ld-object
   ([json-ld-object env]
      (let [nss (or (get json-ld-object (keyword "#")) {})
-           subj (infer-result-kind (update-ns-term (or (get json-ld-object (keyword "@")) (next-blank-id env)) nss))]
+           subj (infer-result-kind (curie-to-uri (or  (get json-ld-object (keyword "@")) (next-blank-id env)) nss))]
        (reduce (fn [triples property]
                  (let [value (get json-ld-object property)
                        normalized-property (curie-to-uri property nss)

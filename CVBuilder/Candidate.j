@@ -17,7 +17,7 @@
 {
   self = [super init];
 
-  triples = {'#':{cvapi: "http://test.com/api/",
+  triples = {'#':{cvapi: [Backend defaultNs],
                   vcard: "http://www.w3.org/2006/vcard/ns#"}};
 
   endpoint = [[Backend apiEndpoint] stringByAppendingString:@"/candidates"];
@@ -25,29 +25,39 @@
   return self;
 }
 
+-(CPString)kind
+{
+  return "Candidate";
+}
+
 -(void)setFamilyName:(CPString)data
 {
   triples["vcard:family-name"] = data;
+  [self modified];
 }
 
 -(void)setGivenName:(CPString)data
 {
   triples["vcard:given-name"] = data;
+  [self modified];
 }
 
 -(void)setAddress:(CPString)data
 {
   triples["vcard:adr"] = data;
+  [self modified];
 }
 
 -(void)setBirthDay:(CPString)data
 {
   triples["vcard:bday"] = data;
+  [self modified];
 }
 
 -(void)setTelephone:(CPString)data
 {
   triples["vcard:tel"] = data;
+  [self modified];
 }
 
 -(CPString)familyName
