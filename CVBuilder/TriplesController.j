@@ -36,9 +36,10 @@
 
 -(void)reloadWin
 {
-  win = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,290) styleMask:CPTitledWindowMask];
+  win = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,290) styleMask:CPTitledWindowMask|CPClosableWindowMask];
   [win setTitle:@"RDF viewer"];
   [win setShowsResizeIndicator:YES];
+  [win setDelegate:self];
   var contentView = [win contentView];
   [contentView setBackgroundColor:[CPColor colorWithHexString:@"e6e8ea"]];
 
@@ -115,5 +116,10 @@
     }
   }
   return @"error";
+}
+
+-(BOOL)windowShouldClose:(id)window {
+  [win close];
+  [CPApp abortModal];
 }
 @end
