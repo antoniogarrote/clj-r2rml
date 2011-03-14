@@ -8,6 +8,7 @@
 
 @import <Foundation/CPObject.j>
 @import <AppKit/CPAccordionView.j>
+@import "GraphLoader.j"
 @import "SyncController.j"
 @import "TriplesController.j"
 @import "Candidate.j"
@@ -71,7 +72,7 @@
 
   // Configuration
   var keys = [CPArray arrayWithObjects:@"apiEndpoint"];
-  var objects = [CPArray arrayWithObjects:@"http://localhost:8080/api"];
+  var objects = [CPArray arrayWithObjects:@"https://localhost:8443/api"];
   var dict = [CPDictionary dictionaryWithObjects:objects forKeys:keys];
   [Backend init];
   [Backend setGlobalConfiguration:dict];
@@ -96,9 +97,12 @@
   // Testing loading a candidate
   var aCandidate = [[Candidate alloc] init];
   [Backend registerNode:aCandidate];
-  //var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrotehernndez-409588"
-  var candidateUri = @"http://localhost:8080/api/candidates/antonio-garrote-457906"
-  [aCandidate loadFromURL:candidateUri withNetworkDelegate:self];
+  //var candidateUri = @"https://localhost:8443/api/candidates/antonio-garrotehernndez-409588"
+  //var candidateUri = @"https://localhost:8443/api/candidates/antonio-garrote-457906"
+  //[aCandidate loadFromURL:candidateUri withNetworkDelegate:self];
+
+  var graphLoader = [[GraphLoader alloc] initWithDelegate:self];
+  [graphLoader loadCandidateGraph:@"https://localhost:8443/api/candidates/antonio-garrote-457906"];
 
   // Uncomment the following line to turn on the standard menu bar.
   //[CPMenu setMenuBarVisible:YES];
@@ -253,6 +257,25 @@
 -(void)candidateLoaded:(Candidate)aCandidate
 {
   candidate = aCandidate;
+  [self redrawCV];
+}
+
+-(void)educationLoaded:(Education)anEducation
+{
+  [educations addObject:anEducation];
+  [self redrawCV];
+}
+
+-(void)educationDeleted:(Education)anEducation
+{
+  [educations removeObject:anEducation];
+  [Backend deleteNode:anEducation];
+  [self redrawCV];
+}
+
+-(void)jobLoaded:(Job)aJob
+{
+  [jobs addObject:aJob];
   [self redrawCV];
 }
 

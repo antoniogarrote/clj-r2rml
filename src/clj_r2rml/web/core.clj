@@ -9,7 +9,7 @@
 
 ;; Demo
 
-(def *ns*
+(def *rdf-ns*
      {:blogs "http://test.com/api/blogs/"})
 
 (def *db-spec*
@@ -52,7 +52,7 @@
   ([] (GET "/hey" [] "<h1>hey</h1>")))
 
 (defroutes main-routes
-  (lda-description *test-resources* (clj-r2rml.sparql-engine.SqlSparqlEngine. (make-context *db-spec* *ns*) []))
+  (lda-description *test-resources* (clj-r2rml.sparql-engine.SqlSparqlEngine. (make-context *db-spec* *rdf-ns*) []))
   (GET "/" request (println (str "req >" (params request) "<")) (str "<h1>Hello World3</h1> "))
   (function-test)
   (route/not-found "<h1>Page not found</h1>"))

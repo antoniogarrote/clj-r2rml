@@ -30,7 +30,7 @@ idCounter = 0;
 
 +(CPString)defaultNs
 {
-  return "http://localhost:8080/api/";
+  return "https://localhost:8443/api/";
 }
 
 +(CPString)apiEndpoint
@@ -41,7 +41,7 @@ idCounter = 0;
 +(void)registerNode:(id)aNode
 {
   if([aNode uid]==-1) {
-    var uid = idCounter;
+    var uid = ""+idCounter;
     idCounter++;
 
     [aNode setUid:uid];
@@ -61,6 +61,24 @@ idCounter = 0;
   }
 
   throw "URI "+ uri + " not found in backend";
+}
+
++(void)deleteNode:(id)aNode
+{
+  debugger;
+  var toDelete = null;
+  for(var k in rdfGraph) {
+    if(k === [aNode uid]) {
+      var triples = [aNode triples];
+      if(triples["@"]) {
+        [aNode prepareDelete];
+        return;
+      } else {
+        delete rdfGraph[k];
+        return;
+      }
+    }
+  }
 }
 
 +(id)allNodes

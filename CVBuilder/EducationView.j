@@ -23,6 +23,7 @@
   CPTextField institutionNameTextField;
 
   CPButton    editBtn;
+  CPButton    deleteBtn;
   Education   education;
 
 
@@ -90,6 +91,14 @@
       [editBtn setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/edit.png"]];
       [editBtn setTarget:self];
       [editBtn setAction:@selector(editEducation:)];
+
+      deleteBtn = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 60, 80, 24)];
+
+      [deleteBtn setTitle:@"Delete"];
+      [deleteBtn setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/delete.png"]];
+      [deleteBtn setTarget:self];
+      [deleteBtn setAction:@selector(deleteEducation:)];
+
     }
     return self;
 }
@@ -135,7 +144,12 @@
   [institutionNameTextField setBackgroundColor:selectedColor];
 
   // Edit button
+  [editBtn setFrame:CGRectMake(CGRectGetWidth([self frame]) - 130, 30, 80, 24)];
   [self addSubview:editBtn];
+
+  [deleteBtn setFrame:CGRectMake(CGRectGetWidth([self frame]) - 130, 60, 80, 24)];
+  [self addSubview:deleteBtn];
+
 }
 
 
@@ -152,11 +166,16 @@
   [institutionNameTextField setBackgroundColor:unselectedColor];
 
   [editBtn removeFromSuperview];
+  [deleteBtn removeFromSuperview];
 }
 
 -(void)editNewEducation {
   isCreation = YES;
   [self editEducation:self];
+}
+
+-(void)deleteEducation:(id)sender {
+  [delegate educationDeleted:education];
 }
 
 -(void)editEducation:(id)sender {

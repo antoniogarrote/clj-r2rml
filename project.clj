@@ -4,7 +4,10 @@
                  [org.clojure/clojure-contrib "1.2.0"]
                  [ring "0.3.7"]
                  [compojure "0.6.1"]
-                 [ring/ring-jetty-adapter "0.3.7"]]
+                 [ring/ring-jetty-adapter "0.3.7"]
+                 [com.hp.hpl.jena/jena "2.6.2"]
+                 [com.hp.hpl.jena/arq "2.8.3"]]
   :dev-dependencies [[leiningen/lein-swank "1.2.0-SNAPSHOT"]
-                     [cdt "1.2"]])
+                     [cdt "1.2"]]
+  :aot :all)
 ;  :jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8030"])

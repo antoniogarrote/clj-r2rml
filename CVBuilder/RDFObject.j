@@ -10,7 +10,7 @@
 @import "AppController.j"
 
 var NEW = 0;
-var LODADED = 1;
+var LOADED = 1;
 var DELETED = 2;
 
 @implementation RDFObject : CPObject
@@ -22,6 +22,7 @@ var DELETED = 2;
   id endpoint;
   CPString networkOperation;
   id state;
+  id delegate;
 }
 
 -(id) init {
@@ -54,7 +55,7 @@ var DELETED = 2;
 
 -(BOOL)isLoaded
 {
-  return state == LODADED;
+  return state == LOADED;
 }
 
 -(BOOL)isDeleted
@@ -72,6 +73,17 @@ var DELETED = 2;
   dirty = YES;
 }
 
+-(void)clean
+{
+  dirty = NO;
+}
+
+-(void)prepareDelete
+{
+  state = DELETED;
+  dirty = YES;
+}
+
 -(id)triplesCount
 {
   var count = 0;
@@ -86,6 +98,11 @@ var DELETED = 2;
 -(id)triples
 {
   return triples;
+}
+
+-(void)setTriples:(id)graph
+{
+  triples = graph;
 }
 
 -(id)loadFromURL:(CPString)aUrl withNetworkDelegate:(id)aDelegate
@@ -140,17 +157,43 @@ var DELETED = 2;
   [urlConnection start];
 }
 
+-(void)deleteToEndPointWithNetworkDelegate:(AppController)aDelegate
+{
+  networkDelegate = aDelegate;
+
+  var msg = [CPString JSONFromObject:triples];
+
+  uri = triples["@"].split("#")[0];
+  uri = uri+"?_method=DELETE";
+  uri = uri.replace("cvapi:",[Backend apiEndpoint]+"/");
+
+  request = [[CPURLRequest alloc] initWithURL:uri];
+  [request setHTTPMethod:@"DELETE"];
+  [request setHTTPBody:msg];
+  [request setValue:[msg length] forHTTPHeaderField:@"Content-Length"];
+  [request setValue:"application/json" forHTTPHeaderField:@"Content-Type"];
+
+  networkOperation = @"DELETE"
+    urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
+  [urlConnection start];
+}
+
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data
 {
 
   if([networkOperation isEqualToString:@"LOAD"]) {
     triples = [data objectFromJSON][0];
+    dirty = NO;
+    state = LOADED;
   } else if([networkOperation isEqualToString:@"CREATE"]){
     triples['@'] = data;
+    dirty = NO;
+    state = LOADED;
+  } else if([networkOperation isEqualToString:@"DELETE"]) {
+    triples['@'] = null;
+    dirty = YES;
+    state = DELETED;
   }
-
-  dirty = NO;
-  state = LODADED;
 
   if(networkDelegate)
     {
@@ -163,7 +206,9 @@ var DELETED = 2;
 
       } else if([networkOperation isEqualToString:@"UPDATE"]){
         [networkDelegate graphUpdated:self];
+      } else if([networkOperation isEqualToString:@"DELETE"]){
+        [networkDelegate graphDeleted:self];
       }
     }
 }
-
+@end

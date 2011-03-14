@@ -46,7 +46,7 @@
       bdayField           = [[CPTextField alloc] initWithFrame:CGRectMake(140, 130, 400, 20)];
 
       editBtn             = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 30, 80, 24)];
-
+      [editBtn setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
       [editBtn setTitle:@"Edit"];
       [editBtn setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/edit.png"]];
       [editBtn setTarget:self];
@@ -126,6 +126,7 @@
   [bdayFieldLabel setBackgroundColor:selectedColor];
 
   // Edit button
+  [editBtn setFrame:CGRectMake(CGRectGetWidth([self frame]) - 130, 30, 80, 24)];
   [self addSubview:editBtn];
 }
 

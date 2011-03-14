@@ -157,6 +157,7 @@
   [companyTextField setBackgroundColor:selectedColor];
 
   // Edit button
+  [editBtn setFrame:CGRectMake(CGRectGetWidth([self frame]) - 130, 30, 80, 24)];
   [self addSubview:editBtn];
 }
 

@@ -65,6 +65,7 @@
 -(void)syncNode:(id)aNode
 {
   console.log("syncing node "+ [aNode uid]);
+  debugger;
   if([aNode isDirty]) {
     console.log(" * node is dirty");
     if([aNode isLoaded]) {
@@ -78,7 +79,7 @@
     } else if([aNode isDeleted]){
       console.log(" * node isDeleted");
       [notification setStringValue:"Deleting " + [aNode uri]];
-      throw "Not implemented yet";
+      [aNode deleteToEndPointWithNetworkDelegate:self];
     } else {
       throw "Unknown state for node";
     }
@@ -111,7 +112,6 @@
 
 -(void)endSync
 {
-
   [notification removeFromSuperview];
   notification = [[CPTextField alloc] initWithFrame:CGRectMake(224,190,420,20)];
 
@@ -167,10 +167,24 @@
   }
 }
 
--(void)graphLoaded:(id)aGraph
+-(void)graphDeleted:(id)aGraph
 {
+  // We call again deleted.
+  // Now the '@' is null, and it will
+  // be deleted from the backend
+  [Backend deleteNode:aGraph];
 
+  var usedTriples = [aGraph triplesCount];
+  [progressBar incrementBy:usedTriples];
 
+  nodesCounter++;
+  var node = [self getCurrentObj];
+  if(node) {
+    currentNode = node;
+    [self syncNode:node];
+  } else {
+    [self endSync];
+  }
 }
 
 -(void)reloadWin
