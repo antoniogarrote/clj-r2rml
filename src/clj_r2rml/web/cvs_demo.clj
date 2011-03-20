@@ -39,8 +39,8 @@ keys:
 
 
 (defroutes main-routes
-  (GET "/cvs/:id" request {:status 200 :headers {"Charset" "ISO-8859-1"} :body (build-xhtml-cv request *sql-context* *server-base*)})
-  (GET "/api/cvs" request (build-acl-check-triples request "foaf:Person" *sql-context* *rdf-ns*))
+  (GET "/cvbuilder/cvs/:id" request {:status 200 :headers {"Charset" "ISO-8859-1"} :body (build-xhtml-cv request *sql-context* *server-base*)})
+  (GET "/cvbuilder/api/cvs" request (build-acl-check-triples request "foaf:Person" *sql-context* *rdf-ns*))
   (lda-description *test-resources* (clj-r2rml.sparql-engine.SqlSparqlEngine. *sql-context* []))
   (my-files "*"))
 
@@ -78,4 +78,4 @@ keys:
       wrap-overload-content-type
       wrap-params))
 
-(run-jetty  (my-api (var main-routes)) {:port 80 :ssl-port 443 :keystore "./keystore" :key-password "Nb9548xK"})
+(run-jetty  (my-api (var main-routes)) {:port 80 :ssl-port 443 :keystore "./keystore" :key-password "todo"})

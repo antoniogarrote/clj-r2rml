@@ -30,7 +30,7 @@ idCounter = 0;
 
 +(CPString)defaultNs
 {
-  return "https://localhost:8443/api/";
+  return "https://antoniogarrote.com/cvbuilder/api/";
 }
 
 +(CPString)apiEndpoint

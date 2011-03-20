@@ -9,7 +9,7 @@
      {:foaf "http://xmlns.com/foaf/0.1/"
       :vcard "http://www.w3.org/2006/vcard/ns#"
       :cv "http://rdfs.org/resume-rdf/"
-      :cvapi "https://localhost:8443/api/"})
+      :cvapi "https://antoniogarrote.com/cvbuilder/api/"})
 
 (def *db-spec*
      {:classname   "com.mysql.jdbc.Driver"
@@ -20,15 +20,15 @@
 
 (def *sql-context* (make-context *db-spec* *rdf-ns*))
 
-(def *server-base* "https://localhost:8443")
+(def *server-base* "https://antoniogarrote.com/cvbuilder")
 
 
 (def *test-resources*
      [;; Candidates
-      {:_uri "https://localhost:8443/api/candidates"
+      {:_uri "https://antoniogarrote.com/cvbuilder/api/candidates"
        :type :Resource
        :resource-type "foaf:Person"
-       :uriTemplate "https://localhost:8443/api/candidates"
+       :uriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates"
        :endPoint {:type :R2RMLMapping
                   :has_r2rml_mapping {:logical-table "candidates"
                                       :subject-map     {:column "uri"}
@@ -50,17 +50,17 @@
                                                             {:property "http://www.w3.org/2006/vcard/ns#email"
                                                              :column   "email"
                                                              :datatype "xsd:string"}]}
-                  :has_r2rml_graph {:table-graph-iri "https://localhost:8443/api/candidates"}}
+                  :has_r2rml_graph {:table-graph-iri "https://antoniogarrote.com/cvbuilder/api/candidates"}}
        :hasOperation [:GET :POST]
        :namedGraphCreationMechanism {:type :NamedGraphCreationMechanism
-                                     :uriTemplate "https://localhost:8443/api/candidates/{id}"
+                                     :uriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{id}"
                                      :mapped_uri_parts [{:mapped_component_value "id"
                                                          :uri_generator :BeautifyUri
                                                          :properties ["http://www.w3.org/2006/vcard/ns#given-name", "http://www.w3.org/2006/vcard/ns#family-name"]}]}}
-      {:_uri "https://localhost:8443/api/candidates/{id}#self"
+      {:_uri "https://antoniogarrote.com/cvbuilder/api/candidates/{id}#self"
        :type :Resource
        :resource-type "foaf:Person"
-       :uriTemplate "https://localhost:8443/api/candidates/{id}#self"
+       :uriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{id}#self"
        :endPoint {:type :R2RMLMapping
                   :has_r2rml_mapping {:logical-table "candidates"
                                       :subject-map     {:column "uri"}
@@ -87,11 +87,11 @@
 
 
       ;; Educations
-      {:_uri "https://localhost:8443/api/candidates/{id}/educations"
+      {:_uri "https://antoniogarrote.com/cvbuilder/api/candidates/{id}/educations"
        :type :Resource
        :resource-type "cv:Education"
-       :uriTemplate "https://localhost:8443/api/candidates/{id}/educations"
-       :mappedUriTemplate "https://localhost:8443/api/candidates/{id}#self"
+       :uriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{id}/educations"
+       :mappedUriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{id}#self"
        :endPoint {:type :R2RMLMapping
                   :has_r2rml_mapping {:logical-table "educations"
                                       :subject-map     {:column "uri"}
@@ -110,23 +110,23 @@
                                                             {:property "http://rdfs.org/resume-rdf/courseDescription"
                                                              :column   "description"
                                                              :datatype "xsd:string"}
-                                                            {:property "https://localhost:8443/api/studiedBy"
+                                                            {:property "https://antoniogarrote.com/cvbuilder/api/studiedBy"
                                                              :column   "candidate"
                                                              :datatype "http://xmlns.com/foaf/0.1/Person"}]}
                   :has_r2rml_graph {:column-graph "candidate" }}
        :hasOperation [:GET :POST]
        :namedGraphCreationMechanism {:type :NamedGraphCreationMechanism
-                                     :uriTemplate "https://localhost:8443/api/candidates/{id}/educations/{education_id}"
+                                     :uriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{id}/educations/{education_id}"
                                      :mapped_uri_parts [{:mapped_component_value "education_id"
                                                          :uri_generator :UniqueIdInt}
                                                         {:mapped_component_value "id"
                                                          :uri_generator :Params}]}}
 
 
-      {:_uri "https://localhost:8443/api/candidates/{candidate_id}/educations/{id}#self"
+      {:_uri "https://antoniogarrote.com/cvbuilder/api/candidates/{candidate_id}/educations/{id}#self"
        :type :Resource
        :resource-type "cv:Education"
-       :uriTemplate "https://localhost:8443/api/candidates/{candidate_id}/educations/{id}#self"
+       :uriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{candidate_id}/educations/{id}#self"
        :endPoint {:type :R2RMLMapping
                   :has_r2rml_mapping {:logical-table "educations"
                                       :subject-map     {:column "uri"}
@@ -145,17 +145,17 @@
                                                             {:property "http://rdfs.org/resume-rdf/courseDescription"
                                                              :column   "description"
                                                              :datatype "xsd:string"}
-                                                            {:property "https://localhost:8443/api/studiedBy"
+                                                            {:property "https://antoniogarrote.com/cvbuilder/api/studiedBy"
                                                              :column   "candidate"
                                                              :datatype "http://xmlns.com/foaf/0.1/Person"}]}
                   :has_r2rml_graph {:column-graph "uri"}}
        :hasOperation [:GET :PUT :DELETE]}
 
       ;; Organizations
-      {:_uri "https://localhost:8443/api/organizations"
+      {:_uri "https://antoniogarrote.com/cvbuilder/api/organizations"
        :type :Resource
        :resource-type "cv:Organization"
-       :uriTemplate "https://localhost:8443/api/organizations"
+       :uriTemplate "https://antoniogarrote.com/cvbuilder/api/organizations"
        :endPoint {:type :R2RMLMapping
                   :has_r2rml_mapping {:logical-table "organizations"
                                       :subject-map     {:column "uri"}
@@ -165,16 +165,16 @@
                                                             {:property "http://xmlns.com/foaf/0.1/homepage"
                                                              :column   "homepage"
                                                              :datatype "xsd:string"}]}
-                  :has_r2rml_graph {:table-graph-iri "https://localhost:8443/api/organizations"}}
+                  :has_r2rml_graph {:table-graph-iri "https://antoniogarrote.com/cvbuilder/api/organizations"}}
        :hasOperation [:GET :POST]
        :namedGraphCreationMechanism {:type :NamedGraphCreationMechanism
-                                     :uriTemplate "https://localhost:8443/api/organizations/{id}"
+                                     :uriTemplate "https://antoniogarrote.com/cvbuilder/api/organizations/{id}"
                                      :mapped_uri_parts [{:mapped_component_value "id"
                                                          :uri_generator :UniqueIdInt}]}}
-      {:_uri "https://localhost:8443/api/organizations/{id}#self"
+      {:_uri "https://antoniogarrote.com/cvbuilder/api/organizations/{id}#self"
        :type :Resource
        :resource-type "cv:Organization"
-       :uriTemplate "https://localhost:8443/api/organizations/{id}#self"
+       :uriTemplate "https://antoniogarrote.com/cvbuilder/api/organizations/{id}#self"
        :endPoint {:type :R2RMLMapping
                   :has_r2rml_mapping {:logical-table "organizations"
                                       :subject-map     {:column "uri"}
@@ -188,11 +188,11 @@
        :hasOperation [:GET]}
 
       ;; Jobs
-      {:_uri "https://localhost:8443/api/candidates/{id}/jobs"
+      {:_uri "https://antoniogarrote.com/cvbuilder/api/candidates/{id}/jobs"
        :type :Resource
        :resource-type "cv:WorkHistory"
-       :uriTemplate "https://localhost:8443/api/candidates/{id}/jobs"
-       :mappedUriTemplate "https://localhost:8443/api/candidates/{id}#self"
+       :uriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{id}/jobs"
+       :mappedUriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{id}#self"
        :endPoint {:type :R2RMLMapping
                   :has_r2rml_mapping {:logical-table "jobs"
                                       :subject-map     {:column "uri"}
@@ -217,15 +217,15 @@
                   :has_r2rml_graph {:column-graph "candidate" }}
        :hasOperation [:GET :POST]
        :namedGraphCreationMechanism {:type :NamedGraphCreationMechanism
-                                     :uriTemplate "https://localhost:8443/api/candidates/{id}/jobs/{job_id}"
+                                     :uriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{id}/jobs/{job_id}"
                                      :mapped_uri_parts [{:mapped_component_value "job_id"
                                                          :uri_generator :UniqueIdInt}
                                                         {:mapped_component_value "id"
                                                          :uri_generator :Params}]}}
-      {:_uri "https://localhost:8443/api/candidates/{candidate_id}/jobs/{id}#self"
+      {:_uri "https://antoniogarrote.com/cvbuilder/api/candidates/{candidate_id}/jobs/{id}#self"
        :type :Resource
        :resource-type "cv:WorkHistory"
-       :uriTemplate "https://localhost:8443/api/candidates/{candidate_id}/jobs/{id}#self"
+       :uriTemplate "https://antoniogarrote.com/cvbuilder/api/candidates/{candidate_id}/jobs/{id}#self"
        :endPoint {:type :R2RMLMapping
                   :has_r2rml_mapping {:logical-table "jobs"
                                       :subject-map     {:column "uri"}
