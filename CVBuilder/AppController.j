@@ -77,7 +77,7 @@
 
   // Configuration
   var keys = [CPArray arrayWithObjects:@"apiEndpoint"];
-  var objects = [CPArray arrayWithObjects:@"https://localhost:8443/api"];
+  var objects = [CPArray arrayWithObjects:@"https://antoniogarrote.com/cvbuilder/api"];
   var dict = [CPDictionary dictionaryWithObjects:objects forKeys:keys];
   [Backend init];
   [Backend setGlobalConfiguration:dict];

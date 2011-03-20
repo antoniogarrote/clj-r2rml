@@ -12,27 +12,35 @@
       <div id="title">
         CV Builder
       </div>
-      <div id='login'>
-        <a href='https://antoniogarrote.com/cvbuilder/builder.html'>Login using FOAF+SSL</a>
+      <img id='rdf_logo' src="/pics/rdf.png"></img>
+
+      <div id='login_box'>
+        <div id='login'>
+          <a id ='login_button'
+            href='https://antoniogarrote.com/cvbuilder/builder.html'>Log in using
+            FOAF+SSL</a>
+        </div>
+        <a id='foaf_tutorial_link' href='foaf_tutorial.html'>FOAF+SSL help</a>
       </div>
       <div id="presentation">
-        CVBuilder is simple a service to edit and share professional r&eacute;sum&eacute;s built on top of linked data and semantic web technologies.
+        CVBuilder is a simple a service to edit and share professional
+        r&eacute;sum&eacute;s built using  <a href='http://linkeddata.org/'>linked data</a> and <a href='http://www.w3.org/standards/semanticweb/'>semantic web</a> technologies.
       </div>
 
       <div id="points">
         <dl>
           <dt>Open linked data</dt>
-          <dd>CVBuilder uses RDF as the main data model to expose and manipulate
-            the data stored in the application. This information is described using
-            standard vocabularies like FOAF or VCard. Furthermore, every bit of
+          <dd>CVBuilder uses <a href='http://www.w3.org/RDF/'>RDF</a> as the main data model to expose and manipulate
+            the information stored in the application. These data are described using
+            standard vocabularies like <a href='http://www.foaf-project.org/'>FOAF</a> or <a href='http://www.w3.org/Submission/vcard-rdf/'>VCard</a>. Furthermore, every bit of
             information has an associated URI so it can be easily linked from other
             documents and applications.</dd>
         </dl>
 
         <dl>
           <dt>Privacy and authentication</dt>
-          <dd>Authentication in CVBuilder is based on the FOAF+SSL mechanism
-            being developed W3C's WebID Incubator Group. This authentication
+          <dd>Authentication in CVBuilder is based on the <a href='http://www.w3.org/wiki/Foaf%2Bssl'>FOAF+SSL</a> mechanism
+            being developed by the W3C's <a href='http://www.w3.org/2005/Incubator/webid/charter'>WebID Incubator Group</a>. This authentication
             mechanism allows users to control their identity and privacy using
             standard technologies like URIs, SSL certificates and the FOAF
             vocabulary.</dd>
@@ -41,22 +49,23 @@
           <dt>RESTful API</dt>
           <dd>CVBuilder offers a RESTful API where every resource identified by
             an URI and containing a RDF graph can be manipulated using the standard
-            HTTP interface. Every RDF graph can be retrieved in the JSON-LD
-            serialization format this makes easy to work with RDF graphs as if they
+            HTTP interface. Every RDF graph can be retrieved in the <a href='http://json-ld.org/'>JSON-LD</a>
+            serialization format, this makes easy to work with RDF graphs as if they
             were standard JSON objects.</dd>
         </dl>
         <dl>
           <dt>Open Source</dt>
-          <dd>One goal of the project was to build a web application with
+          <dd>One goal of the project is to build a web application with
             semantic web technologies but using mainstream development
             tools. CVBuilder uses a standard relational storage solution (MySQL),
-            uses Ruby on Rails to generate the database schema and a lightweight
-            web framework to route requests to the application logic (Compojure). A
-            small logic layer has been developed capable of translating SPARQL
-            queries into SQL queries. All the code of the application is open
-            source and can be retrieved from our account in Github.</dd>
+            Ruby on Rails to generate the database schema and a lightweight
+            web framework to route requests to the application logic (Compojure). Additionally,
+            a small software layer making possible to translate SPARQLqueries
+            into SQL queries has been developed. All the code of the application is open
+            source and can be retrieved from <a href='https://github.com/antoniogarrote/clj-r2rml'>our account in Github</a>.</dd>
         </dl>
       </div>
     </div>
+
   </body>
 </html>

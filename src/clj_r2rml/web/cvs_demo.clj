@@ -78,4 +78,4 @@ keys:
       wrap-overload-content-type
       wrap-params))
 
-(run-jetty  (my-api (var main-routes)) {:port 80 :ssl-port 443 :keystore "./keystore" :key-password "todo"})
+(run-jetty  (my-api (var main-routes)) {:port 8080 :ssl-port 8443 :keystore "./keystore" :key-password "Nb9548xK"})
