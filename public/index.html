@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE
+   html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+  <head>
+    <title>CVBuilder</title>
+    <link rel="stylesheet" href="/css/app.css"></link>
+  </head>
+  <body>
+    <div id="content">
+      <div id="title">
+        CV Builder
+      </div>
+      <div id='login'>
+        <a href='https://antoniogarrote.com/cvbuilder/builder.html'>Login using FOAF+SSL</a>
+      </div>
+      <div id="presentation">
+        CVBuilder is simple a service to edit and share professional r&eacute;sum&eacute;s built on top of linked data and semantic web technologies.
+      </div>
+
+      <div id="points">
+        <dl>
+          <dt>Open linked data</dt>
+          <dd>CVBuilder uses RDF as the main data model to expose and manipulate
+            the data stored in the application. This information is described using
+            standard vocabularies like FOAF or VCard. Furthermore, every bit of
+            information has an associated URI so it can be easily linked from other
+            documents and applications.</dd>
+        </dl>
+
+        <dl>
+          <dt>Privacy and authentication</dt>
+          <dd>Authentication in CVBuilder is based on the FOAF+SSL mechanism
+            being developed W3C's WebID Incubator Group. This authentication
+            mechanism allows users to control their identity and privacy using
+            standard technologies like URIs, SSL certificates and the FOAF
+            vocabulary.</dd>
+        </dl>
+        <dl>
+          <dt>RESTful API</dt>
+          <dd>CVBuilder offers a RESTful API where every resource identified by
+            an URI and containing a RDF graph can be manipulated using the standard
+            HTTP interface. Every RDF graph can be retrieved in the JSON-LD
+            serialization format this makes easy to work with RDF graphs as if they
+            were standard JSON objects.</dd>
+        </dl>
+        <dl>
+          <dt>Open Source</dt>
+          <dd>One goal of the project was to build a web application with
+            semantic web technologies but using mainstream development
+            tools. CVBuilder uses a standard relational storage solution (MySQL),
+            uses Ruby on Rails to generate the database schema and a lightweight
+            web framework to route requests to the application logic (Compojure). A
+            small logic layer has been developed capable of translating SPARQL
+            queries into SQL queries. All the code of the application is open
+            source and can be retrieved from our account in Github.</dd>
+        </dl>
+      </div>
+    </div>
+  </body>
+</html>

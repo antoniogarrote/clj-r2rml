@@ -1,0 +1,117 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+
+/* main styes */
+
+body {
+   background-color: #D3D3D3;
+   font-family: Arial
+}
+
+#content {
+   margin: auto;
+   width: 800px
+}
+
+#title {
+   font: bold 53px/53px Arial,Helvetica,sans-serif;
+   margin-bottom: 140px;
+   padding: 30px;
+   padding-top: 160px;
+   font-size: 100px;
+   color: darkGreen;
+   margin-left: 10px
+}
+
+#points  dl {
+   max-width: 270px;
+   min-width: 270px;
+   display: relative;
+   float: left;
+   padding: 20px;
+   margin-bottom: 20px;
+   text-align: left;
+   margin-left: 65px
+ }
+
+dt {
+   color: darkGreen
+}
+
+dd {
+   color: #666666;
+    float: left;
+    font: 13px Arial;
+    padding: 10px 0 0 0px
+}
+
+
+#presentation {
+   padding: 20px;
+   font-size: 25px;
+   text-align: center;
+   margin-top: 200px;
+   line-height: 1.2
+}
+
+#login {
+   padding: 10px 20px;
+   background-color: darkOrange;
+   border-radius: 5px 5px 5px 5px;
+   color: white;
+   float: right;
+   font-size: 16px;
+   font-weight: bold;
+   position: relative;
+   right: 80px;
+   top: -80px;
+}
+
+#login a {
+   color: white;
+   text-decoration: none;
+   displa: block;
+   width: 100%
+}
