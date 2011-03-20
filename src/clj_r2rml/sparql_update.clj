@@ -434,7 +434,7 @@
 
 (defn translate-insert
   ([triples table-mappers]
-     (let [_ (println (str "TRIPLES: " (vec triples)))
+     (let [_ (println (str "TRIPLES SPARQL UPDATE: " (vec triples)))
            _ (println (str "TABLE MAPPERS: " table-mappers))
            initial-update-schema-context (UpdateSchemaContext. (map (fn [table-mapper] (clj-r2rml.sparql-update.UpdateTableContext. table-mapper [])) table-mappers))
            initial-update-context (UpdateContext.

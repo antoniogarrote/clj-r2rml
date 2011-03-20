@@ -6,7 +6,7 @@ class CreateCandidates < ActiveRecord::Migration
       t.string :birthdate
       t.string :nationality
       t.string :telephone
-      t.text :address
+      t.text   :address
       t.string :uri
 
       t.timestamps

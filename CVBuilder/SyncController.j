@@ -65,7 +65,7 @@
 -(void)syncNode:(id)aNode
 {
   console.log("syncing node "+ [aNode uid]);
-  debugger;
+
   if([aNode isDirty]) {
     console.log(" * node is dirty");
     if([aNode isLoaded]) {

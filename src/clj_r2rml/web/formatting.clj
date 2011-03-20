@@ -9,7 +9,11 @@
 
 (defn update-node
  ([node [s p o g]]
-    (swap! node (fn [m] (assoc m (:value p) (:value o))))))
+    (swap! node (fn [m] (if (get m (:value p))
+                         (let [old-value (get m (:value p))
+                               new-value (if (coll? old-value) (conj old-value (:value o)) (list old-value (:value o)))]
+                           (assoc m (:value p) new-value))
+                         (assoc m (:value p) (:value o)))))))
 
 (defn check-node
   ([nodes [s p o g]]
@@ -18,7 +22,9 @@
 (defn to-nodes
   ([triples]
      (reduce (fn [nodes triple]
-               (let [triple (vals triple)]
+               (let [_ (println (str "*** Triple: " triple))
+                     triple (vals triple)
+                     _ (println (str "*** Triple after: " triple))]
                  (if-let [node (check-node nodes triple)]
                    (do (update-node node triple)
                        nodes)
@@ -40,34 +46,45 @@
   ([nodes ns]
      (doseq [n nodes]
        (println (str "node: " @n))
-       (swap! n (fn [m] (reduce (fn [ac [k v]]  (assoc ac k v)) {} (map (fn [[k v]] [(update-ns-term k ns) (update-ns-term v ns)]) m)))))
+       (swap! n (fn [m] (reduce (fn [ac [k v]]  (assoc ac k v)) {} (map (fn [[k v]] [(update-ns-term k ns) (if (coll? v)
+                                                                                                          (map #(update-ns-term % ns) v)
+                                                                                                          (update-ns-term v ns))]) m)))))
      nodes))
 
 (defn compact-ns
   ([nodes ns-orig]
      (for [node nodes]
-       (let [nss (atom {})
-             nodep (reduce (fn [ac [k v]]
-                             (if (and (coll? k) (coll? v))
-                               (do (swap! nss (fn [m]
-                                                (assoc (assoc m (first k) ((keyword (first k)) ns-orig))
-                                                   (first v) ((keyword (first v)) ns-orig))))
-                                        (assoc ac (clojure.contrib.string/join ":" k)
-                                               (clojure.contrib.string/join ":" v)))
-                               (if (coll? k)
-                                 (do (swap! nss (fn [m] (assoc m (first k) ((keyword (first k)) ns-orig))))
-                                     (assoc ac (clojure.contrib.string/join ":" k) v))
-                                 (if (coll? v)
-                                   (do (swap! nss (fn [m] (assoc m (first v) ((keyword (first v)) ns-orig))))
-                                       (assoc ac k (clojure.contrib.string/join ":" v)))
-                                   (assoc ac k v)))))
-                           {} @node)]
-         (assoc nodep "#" @nss)))))
+       (let [_ (println (str "node vale " @node))
+             [nodep nss](reduce (fn [[ac nss] [k v]]
+                                  (let [_ (println (str "IT K:" k " V:" v))
+                                        kp (if (coll? k)
+                                             (clojure.contrib.string/join ":" k)
+                                             k)
+                                        nssp (if (coll? k)
+                                               (assoc nss (first k) ((keyword (first k)) ns-orig))
+                                               nss)
+                                        _ (println (str "V BEFORE: " v))
+                                        vp (if (coll? v)
+                                             (if (coll? (first v)) v [v])
+                                             [v])
+                                        _ (println (str "V AFTER: " (vec vp)))
+                                        vpp (map (fn [v]  (if (coll? v)
+                                                           (clojure.contrib.string/join ":" v)
+                                                           v)) vp)
+                                        _ (println (str "VPP... " (vec vpp)))
+                                        nsspp (reduce (fn [m v] (if (coll? v)
+                                                                 (assoc m (first v) ((keyword (first v)) ns-orig))
+                                                                 m))
+                                                      nssp vp)]
+                                    [(assoc ac kp (if (and (coll? vpp) (= 1 (count vpp))) (first vpp) vpp)) nsspp]))
+                                [{} ns-orig] @node)]
+         (assoc nodep "#" nss)))))
 
 (defn to-json-ld
   ([triples ns jsonp]
      (let [nodes (to-nodes triples)
            _ (println (str "TO JSONFY "  (update-ns nodes ns)))
+           _ (println (str "BEFORE JSONFY " (vec (compact-ns (update-ns nodes ns) ns))))
            json (clojure.contrib.json/json-str (compact-ns (update-ns nodes ns) ns))]
        (if (nil? jsonp)
          json

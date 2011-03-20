@@ -9,10 +9,12 @@
 @import <Foundation/CPObject.j>
 @import <AppKit/CPAccordionView.j>
 @import "GraphLoader.j"
+@import "GraphSelectionView.j"
 @import "SyncController.j"
 @import "TriplesController.j"
 @import "Candidate.j"
 @import "CandidateView.j"
+@import "InitialCandidateView.j"
 @import "Education.j"
 @import "EducationView.j"
 @import "Job.j"
@@ -35,6 +37,7 @@
   CPString JobItemIdentifier;
   CPString SyncItemIdentifier;
   CPString SemanticItemIdentifier;
+  CPString XHTMLItemIdentifier;
 
   id minHeight;
   id marginLeft
@@ -63,7 +66,9 @@
   [theWindow setAcceptsMouseMovedEvents:YES];
 
   contentView = [[CPView alloc] initWithFrame:[[theWindow contentView] frame]];
+  [contentView setBackgroundColor:[CPColor grayColor]];
   [scrollView setDocumentView:contentView];
+  [scrollView setBackgroundColor:[CPColor grayColor]];
   [contentView setBackgroundColor:[CPColor grayColor]];
   [contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
@@ -83,6 +88,7 @@
   JobItemIdentifier = @"job_item_identifier";
   SyncItemIdentifier = @"sync_item_identifier";
   SemanticItemIdentifier = @"semantic_item_identifier";
+  XHTMLItemIdentifier = @"xhtml_item_identifier";
 
 
   toolbar = [[CPToolbar alloc] initWithIdentifier:@"Sections"];
@@ -94,15 +100,17 @@
   // Redraw main interface
   [self redrawCV];
 
+  var graphSelectionView = [[GraphSelectionView alloc] initWithParentView:contentView andDelegate:self];
+
   // Testing loading a candidate
-  var aCandidate = [[Candidate alloc] init];
-  [Backend registerNode:aCandidate];
+  //var aCandidate = [[Candidate alloc] init];
+  //[Backend registerNode:aCandidate];
   //var candidateUri = @"https://localhost:8443/api/candidates/antonio-garrotehernndez-409588"
   //var candidateUri = @"https://localhost:8443/api/candidates/antonio-garrote-457906"
   //[aCandidate loadFromURL:candidateUri withNetworkDelegate:self];
 
-  var graphLoader = [[GraphLoader alloc] initWithDelegate:self];
-  [graphLoader loadCandidateGraph:@"https://localhost:8443/api/candidates/antonio-garrote-457906"];
+  //var graphLoader = [[GraphLoader alloc] initWithDelegate:self];
+  //[graphLoader loadCandidateGraph:@"https://localhost:8443/api/candidates/antonio-garrote-457906"];
 
   // Uncomment the following line to turn on the standard menu bar.
   //[CPMenu setMenuBarVisible:YES];
@@ -121,14 +129,15 @@
   marginLeft       = 40;
   marginTopCounter = 20;
   width            = CGRectGetWidth([contentView bounds]) - 80;
-  minHeight        = CGRectGetHeight([contentView bounds]) - 20;
+
+  minHeight = CGRectGetHeight([contentView bounds]) - 20;
 
   if(candidate) {
 
     // candiate's profile section
 
     candidateRectHeight = 200;
-    educationRectHeight = 140;
+    educationRectHeight = 170;
     jobRectHeight       = 170;
 
     var rect = CGRectMake(marginLeft,marginTopCounter,width, candidateRectHeight);
@@ -146,6 +155,7 @@
     // candidate's work experience
 
     var jobsCount = [jobs count];
+
     if(jobsCount > 0) {
 
       var jobSectionView = [[CPView alloc] initWithFrame:CGRectMake(marginLeft, marginTopCounter, width, 40)];
@@ -158,6 +168,17 @@
       [contentView addSubview:jobSectionView];
       marginTopCounter = marginTopCounter + 40;
     }
+    jobs = [jobs sortedArrayUsingFunction:function(a,b){
+        var startA = new Date([a startDate]);
+        var startB = new Date([b startDate]);
+        if(startA < startB) {
+          return CPOrderedDescending;
+        } else if(startA > startB) {
+          return CPOrderedAscending;
+        } else {
+          return CPOrderedSame;
+        }
+      }];
     for(var i=0; i<jobsCount; i++) {
       var job = [jobs objectAtIndex:i];
 
@@ -190,6 +211,19 @@
       [contentView addSubview:educationSectionView];
       marginTopCounter = marginTopCounter + 40;
     }
+
+    educations = [educations sortedArrayUsingFunction:function(a,b){
+        var startA = new Date([a startDate]);
+        var startB = new Date([b startDate]);
+        if(startA < startB) {
+          return CPOrderedDescending;
+        } else if(startA > startB) {
+          return CPOrderedAscending;
+        } else {
+          return CPOrderedSame;
+        }
+      }];
+
     for(var i=0; i<educationsCount; i++) {
       var education = [educations objectAtIndex:i];
       var educationView = [[EducationView alloc] initWithFrame:CGRectMake(marginLeft, marginTopCounter, width, educationRectHeight) andDelegate:self];
@@ -203,7 +237,9 @@
 
   }
 
-  [self drawPadding];
+  //if(candidate) {
+    [self drawPadding];
+    //  }
 
   [contentView setBounds:CGRectMake(0,
                                     0,
@@ -228,7 +264,9 @@
     [paddingView setAutoresizingMask:CPViewWidthSizable];
 
     [paddingView setBackgroundColor:[CPColor whiteColor]];
-    [contentView addSubview:paddingView];
+    if(candidate) {
+      [contentView addSubview:paddingView];
+    }
   }
 }
 
@@ -242,7 +280,6 @@
 
 -(void)graphLoaded:(id)aGraph
 {
-  debugger;
   switch ([aGraph kind]) {
   case "Candidate" : [self candidateLoaded: aGraph]; break;
   }
@@ -266,10 +303,18 @@
   [self redrawCV];
 }
 
+
 -(void)educationDeleted:(Education)anEducation
 {
   [educations removeObject:anEducation];
   [Backend deleteNode:anEducation];
+  [self redrawCV];
+}
+
+-(void)jobDeleted:(Education)aJob
+{
+  [jobs removeObject:aJob];
+  [Backend deleteNode:aJob];
   [self redrawCV];
 }
 
@@ -283,12 +328,12 @@
 
 // Return an array of toolbar item identifier (all the toolbar items that may be present in the toolbar)
 - (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)aToolbar {
-  return [EducationItemIdentifier, JobItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, SyncItemIdentifier, SemanticItemIdentifier];
+  return [EducationItemIdentifier, JobItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, SyncItemIdentifier, XHTMLItemIdentifier, SemanticItemIdentifier];
 }
 
 // Return an array of toolbar item identifier (the default toolbar items that are present in the toolbar)
 - (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)aToolbar {
-  return [EducationItemIdentifier, JobItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, SyncItemIdentifier, SemanticItemIdentifier];
+  return [EducationItemIdentifier, JobItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, SyncItemIdentifier, XHTMLItemIdentifier, SemanticItemIdentifier];
 }
 
 - (CPToolbarItem)toolbar:(CPToolbar)aToolbar itemForItemIdentifier:(CPString)anItemIdentifier willBeInsertedIntoToolbar:(BOOL)aFlag {
@@ -324,6 +369,16 @@
       [toolbarItem setTarget:self];
       [toolbarItem setAction:@selector(doSync:)];
       [toolbarItem setLabel:"Sync"];
+      [toolbarItem setMinSize:CGSizeMake(32, 32)];
+      [toolbarItem setMaxSize:CGSizeMake(32, 32)];
+    } else if(anItemIdentifier == XHTMLItemIdentifier) {
+      var mainBundle = [CPBundle mainBundle];
+
+      var image = [[CPImage alloc] initWithContentsOfFile:[mainBundle pathForResource:@"xhtml.png"] size:CPSizeMake(30, 30)];
+      [toolbarItem setImage:image];
+      [toolbarItem setTarget:self];
+      [toolbarItem setAction:@selector(doXHTML:)];
+      [toolbarItem setLabel:"Browse URL"];
       [toolbarItem setMinSize:CGSizeMake(32, 32)];
       [toolbarItem setMaxSize:CGSizeMake(32, 32)];
     }  else if(anItemIdentifier == SemanticItemIdentifier) {
@@ -381,9 +436,29 @@
   [sync sync];
 }
 
+-(void)doXHTML:(id)sender {
+  var uri = [candidate cvUri];
+  window.open(uri,'preview CV');
+}
+
 -(void)doTriples:(id)sender {
   var triples = [[TriplesController alloc] initWithDelegate:self];
   [triples reloadWin];
 }
 
+-(void)editNewCV {
+  candidate = [[Candidate alloc] init];
+  var initialCandidateView = [[InitialCandidateView alloc] initWithDelegate:self];
+  [initialCandidateView editCandidate];
+}
+
+-(void)initialCandidateCreated:(Candidate)createdCandidate {
+  candidate = createdCandidate;
+  [Backend registerNode:candidate];
+  [self redrawCV];
+}
+
+-(void)initialCandidateCanceled {
+  var graphSelectionView = [[GraphSelectionView alloc] initWithParentView:contentView andDelegate:self];
+}
 @end

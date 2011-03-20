@@ -64,9 +64,20 @@
   [self modified];
 }
 
+-(void)setEducationDescription:(CPString)jobDescription
+{
+  triples["cv:courseDescription"] = jobDescription;
+  [self modified];
+}
+
 -(id)uri
 {
   return triples["@"];
+}
+
+-(id)educationDescription
+{
+  return triples["cv:courseDescription"];
 }
 
 -(id)startDate

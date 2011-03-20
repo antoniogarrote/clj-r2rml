@@ -25,6 +25,7 @@
   CPTextField companyTextField;
 
   CPButton    editBtn;
+  CPButton    deleteBtn;
   Job   job;
 
 
@@ -107,6 +108,13 @@
       [editBtn setTarget:self];
       [editBtn setAction:@selector(editJob:)];
 
+      deleteBtn = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 60, 80, 24)];
+
+      [deleteBtn setTitle:@"Delete"];
+      [deleteBtn setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/delete.png"]];
+      [deleteBtn setTarget:self];
+      [deleteBtn setAction:@selector(deleteJob:)];
+
       [self setJob:aJob];
 
     }
@@ -159,6 +167,10 @@
   // Edit button
   [editBtn setFrame:CGRectMake(CGRectGetWidth([self frame]) - 130, 30, 80, 24)];
   [self addSubview:editBtn];
+
+  [deleteBtn setFrame:CGRectMake(CGRectGetWidth([self frame]) - 130, 60, 80, 24)];
+  [self addSubview:deleteBtn];
+
 }
 
 
@@ -174,15 +186,19 @@
   [jobTitleTextField setBackgroundColor:unselectedColor];
   [jobDescriptionTextField setBackgroundColor:unselectedColor];
   [companyTextField setBackgroundColor:unselectedColor];
-  [jobDescriptionTextField setBackgroundColor:unselectedColor];
   [companyTextField setBackgroundColor:unselectedColor];
 
   [editBtn removeFromSuperview];
+  [deleteBtn removeFromSuperview];
 }
 
 -(void)editNewJob {
   isCreation = YES;
   [self editJob:self];
+}
+
+-(void)deleteJob:(id)sender {
+  [delegate jobDeleted:job];
 }
 
 -(void)editJob:(id)sender {
@@ -220,8 +236,8 @@
   editStartDatePicker =[[DatePicker alloc] initWithFrame:CGRectMake(xPosField -5, initialVPos, widthField+5, height)];
   [editStartDatePicker displayPreset:1];
   if([job startDate]) {
-    // @todo Format date here
-    //[editStartDatePicker setDate:[CPDate initWithString:[job startDate]]];
+    var date = new Date([job startDate]);
+    [editStartDatePicker setDate:date];
   }
 
   initialVPos = initialVPos + vInc + 10;
@@ -232,8 +248,8 @@
   editEndDatePicker =[[DatePicker alloc] initWithFrame:CGRectMake(xPosField-5, initialVPos, widthField+5, height)];
   [editEndDatePicker displayPreset:1];
   if([job endDate]) {
-    // @todo Format date here
-    //[editEndDatePicker setDate:[CPDate initWithString:[job endDate]]];
+    var date = new Date([job endDate]);
+    [editEndDatePicker setDate:date];
   }
 
   initialVPos = initialVPos + vInc + 10;
@@ -327,7 +343,6 @@
   [editWin close];
   [CPApp abortModal];
 
-  debugger;
 
   if(isCreation) {
     [delegate jobAdded:self];

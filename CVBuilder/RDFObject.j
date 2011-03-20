@@ -58,6 +58,11 @@ var DELETED = 2;
   return state == LOADED;
 }
 
+-(void)hasBeenLoaded
+{
+  state = LOADED;
+}
+
 -(BOOL)isDeleted
 {
   return state == DELETED;
@@ -131,8 +136,8 @@ var DELETED = 2;
   [request setValue:[msg length] forHTTPHeaderField:@"Content-Length"];
   [request setValue:"application/json" forHTTPHeaderField:@"Content-Type"];
 
-  networkOperation = @"CREATE"
-    urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
+  networkOperation = @"CREATE";
+  urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
   [urlConnection start];
 }
 

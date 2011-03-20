@@ -71,6 +71,25 @@
 
 }
 
+-(void)loadCVS
+{
+  maxTriples = 1;
+
+  state = "LOAD_CVS_STEP";
+
+  var endpoint = [[Backend apiEndpoint] stringByAppendingString: @"/cvs"];
+
+  var request = [[CPURLRequest alloc] initWithURL:endpoint];
+  [request setHTTPMethod:@"GET"];
+  [request setValue:"application/json" forHTTPHeaderField:@"Content-Type"];
+
+  networkOperation = @"LOAD";
+
+  var urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
+  [urlConnection start];
+
+}
+
 -(void)loadJobs
 {
   state = "LOAD_JOBS_STEP";
@@ -111,6 +130,7 @@
     for(var i=0; i<objs.length; i++) {
       var education = [[Education alloc] initForCandidate:candidate];
       [education clean];
+      [education hasBeenLoaded];
       [education setTriples:objs[i]];
       [Backend registerNode:education];
       [delegate educationLoaded:education];
@@ -118,11 +138,14 @@
 
     [self loadJobs];
 
+  } else if(state === "LOAD_CVS_STEP"){
+    [delegate cvsLoaded:objs];
   } else {
     [progressBar incrementBy:1.0];
     for(var i=0; i<objs.length; i++) {
       var job = [[Job alloc] initForCandidate:candidate];
       [job clean];
+      [job hasBeenLoaded];
       [job setTriples:objs[i]];
       [Backend registerNode:job];
       [delegate jobLoaded:job];

@@ -305,6 +305,12 @@ CPLogRegister(CPLogConsole);
     return _date;
 }
 
+- (CPString)dateString
+{
+  var dateString = _date.getMonth()+1 + "/" + _date.getDate() + "/" + _date.getFullYear();
+  return dateString;
+}
+
 - (void)setDate:(CPDate)aDate
 {
     _date = [aDate copy];

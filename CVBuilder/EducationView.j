@@ -10,6 +10,7 @@
 @import <Foundation/Foundation.j>
 @import "Education.j"
 @import "DatePicker.j"
+@import "LPMultiLineTextField.j"
 
 @implementation EducationView : CPView
 {
@@ -21,6 +22,7 @@
   CPTextField dashTextField;
   CPTextField degreeTextField;
   CPTextField institutionNameTextField;
+  CPTextField educationDescriptionTextField;
 
   CPButton    editBtn;
   CPButton    deleteBtn;
@@ -39,6 +41,9 @@
   CPTextField editInstitutionNameLabel;
   CPTextField editInstitutionUri;
   CPTextField editInstitutionUriLabel;
+  LPMultiLineTextField editEducationDescriptionTextField;
+  CPTextField editEducationDescriptionLabel;
+
 
   id delegate;
 }
@@ -84,6 +89,18 @@
 
       topOffset = topOffset + height;
 
+      var descText = [education educationDescription] || "";
+      var lines = descText.split("\n").length;
+      linesDescOffset = 0;
+      console.log("Found "+ linesDescOffset + " lines");
+      if(lines > 1) {
+        linesDescOffset = lines * 20;
+      }
+
+      educationDescriptionTextField = [[CPTextField alloc] initWithFrame:CGRectMake(230, topOffset, formWidth, height + linesDescOffset)];
+      [educationDescriptionTextField setBackgroundColor:[CPColor whiteColor]];
+      [educationDescriptionTextField setFont:[CPFont fontWithName:@"Arial" size:15]];
+
 
       editBtn = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 30, 80, 24)];
 
@@ -108,6 +125,7 @@
   [endDateTextField setStringValue:[education endDate]];
   [degreeTextField setStringValue:[education degreeType]];
   [institutionNameTextField setStringValue:[education studiedInOrganizationName]];
+  [educationDescriptionTextField setStringValue:[education educationDescription]];
 }
 
 -(void)setEducation:(Education)anEducation
@@ -123,6 +141,7 @@
   [self addSubview:endDateTextField];
   [self addSubview:degreeTextField];
   [self addSubview:institutionNameTextField];
+  [self addSubview:educationDescriptionTextField];
 
   [self updateEducation];
 }
@@ -142,6 +161,7 @@
   [endDateTextField setBackgroundColor:selectedColor];
   [degreeTextField setBackgroundColor:selectedColor];
   [institutionNameTextField setBackgroundColor:selectedColor];
+  [educationDescriptionTextField setBackgroundColor:selectedColor];
 
   // Edit button
   [editBtn setFrame:CGRectMake(CGRectGetWidth([self frame]) - 130, 30, 80, 24)];
@@ -164,6 +184,7 @@
   [endDateTextField setBackgroundColor:unselectedColor];
   [degreeTextField setBackgroundColor:unselectedColor];
   [institutionNameTextField setBackgroundColor:unselectedColor];
+  [educationDescriptionTextField setBackgroundColor:unselectedColor];
 
   [editBtn removeFromSuperview];
   [deleteBtn removeFromSuperview];
@@ -179,7 +200,7 @@
 }
 
 -(void)editEducation:(id)sender {
-  editWin = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,270) styleMask:CPTitledWindowMask];
+  editWin = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,290) styleMask:CPTitledWindowMask];
   var contentView = [editWin contentView];
   [contentView setBackgroundColor:[CPColor colorWithHexString:@"e6e8ea"]];
 
@@ -213,8 +234,8 @@
   editStartDatePicker =[[DatePicker alloc] initWithFrame:CGRectMake(xPosField -5, initialVPos, widthField+5, height)];
   [editStartDatePicker displayPreset:1];
   if([education startDate]) {
-    // @todo Format date here
-    //[editStartDatePicker setDate:[CPDate initWithString:[education startDate]]];
+    var date = new Date([education startDate]);
+    [editStartDatePicker setDate:date];
   }
 
   initialVPos = initialVPos + vInc + 10;
@@ -225,8 +246,8 @@
   editEndDatePicker =[[DatePicker alloc] initWithFrame:CGRectMake(xPosField-5, initialVPos, widthField+5, height)];
   [editEndDatePicker displayPreset:1];
   if([education endDate]) {
-    // @todo Format date here
-    //[editEndDatePicker setDate:[CPDate initWithString:[education endDate]]];
+    var date = new Date([education endDate]);
+    [editEndDatePicker setDate:date];
   }
 
   initialVPos = initialVPos + vInc + 10;
@@ -241,14 +262,15 @@
 
   initialVPos = initialVPos + vInc + 5;
 
-  editInstitutionUriLabel= [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
-  [editInstitutionUriLabel setStringValue:@"Institution URI"];
-  [editInstitutionUriLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
-  editInstitutionUriTextField =[[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editInstitutionUriTextField setBackgroundColor:[CPColor whiteColor]];
-  [editInstitutionUriTextField setEditable:YES];
+  editEducationDescriptionLabel = [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
+  [editEducationDescriptionLabel setStringValue:@"Description"];
+  [editEducationDescriptionLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+  editEducationDescriptionTextField =[[LPMultiLineTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height * 2.5)];
+  [editEducationDescriptionTextField setBackgroundColor:[CPColor whiteColor]];
+  [editEducationDescriptionTextField setEditable:YES];
+  [editEducationDescriptionTextField setStringValue:[education educationDescription]];
 
-  initialVPos = initialVPos + vInc;
+  initialVPos = initialVPos + vInc + vInc;
 
   [contentView addSubview:editStartDatePickerLabel];
   [contentView addSubview:editStartDatePicker];
@@ -258,8 +280,8 @@
   [contentView addSubview:editDegreeTextField];
   [contentView addSubview:editInstitutionNameLabel];
   [contentView addSubview:editInstitutionNameTextField];
-  [contentView addSubview:editInstitutionUriLabel];
-  [contentView addSubview:editInstitutionUriTextField];
+  [contentView addSubview:editEducationDescriptionLabel];
+  [contentView addSubview:editEducationDescriptionTextField];
 
 
   var okButton = [[CPButton alloc] initWithFrame:CGRectMake(160,initialVPos+30, 70, 24)];
@@ -314,11 +336,10 @@
 
   [education setDegreeType:[editDegreeTextField stringValue]];
   [education setStudiedInOrganizationName:[editInstitutionNameTextField stringValue]];
+  [education setEducationDescription:[editEducationDescriptionTextField stringValue]];
 
   [editWin close];
   [CPApp abortModal];
-
-  debugger;
 
   if(isCreation) {
     [delegate educationAdded:self];

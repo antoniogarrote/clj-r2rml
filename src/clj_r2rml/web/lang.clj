@@ -41,6 +41,7 @@
            resource {:template (:uriTemplate resource)
                      :mappedUriTemplate (:mappedUriTemplate resource)
                      :mapping table-mapper
+                     :resource-type (:resource-type resource)
                      :minter minter
                      :operations (:hasOperation resource)}]
        (swap! (:resources env) (fn [m] (assoc m uri resource)))

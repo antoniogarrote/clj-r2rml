@@ -65,7 +65,6 @@ idCounter = 0;
 
 +(void)deleteNode:(id)aNode
 {
-  debugger;
   var toDelete = null;
   for(var k in rdfGraph) {
     if(k === [aNode uid]) {

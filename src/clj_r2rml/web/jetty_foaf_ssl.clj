@@ -10,7 +10,26 @@
            (com.hp.hpl.jena.rdf.model ModelFactory)
            (com.hp.hpl.jena.rdf.model Model)
            (com.hp.hpl.jena.query QueryFactory Query QueryExecutionFactory))
-  (:require [ring.util.servlet :as servlet]))
+  (:use clj-r2rml.web.configuration)
+  (:require [ring.util.servlet :as servlet])
+  (:require redis))
+
+;; Cache for certificates
+
+(defn store-cert-in-cache
+  ([uri modulus exp]
+     (redis/with-server *redis-server*
+       (redis/set uri (str modulus ":" exp)))))
+
+(defn cert-in-cache?
+  ([uri]
+     (redis/with-server *redis-server*
+       (let [match (redis/get uri)]
+         (if (nil? match)
+           nil
+           (let [[modulus exp] (vec (.split match ":"))]
+             {:?exp exp :?modulus modulus}))))))
+
 
 (defn foaf-ssl-sparql-query
   "A SPARQL query to retrieve the modulus and public exponent of the FOAF-SSL certificate"
@@ -38,13 +57,18 @@ WHERE {
            query-execution-factory (QueryExecutionFactory/create query-factory model)]
        (map (fn [res] (process-model-query-result model res)) (iterator-seq (.execSelect query-execution-factory))))))
 
+
 (defn deref-foaf-graph
   "Tries to retry the FOAF RDF graph and extract the modulus and exponent
    values associated to the declared certificate"
   ([uri]
-     (let [model (let [m (ModelFactory/createDefaultModel)]
-                   (.read m uri) m)]
-       model)))
+     (let [model (cert-in-cache? uri)]
+       (if model [model nil]
+           (let [m (ModelFactory/createDefaultModel)]
+             (.read m uri)
+             (let [modulus-exp (first (extract-modulus-exp uri m))]
+               (store-cert-in-cache uri (:?modulus modulus-exp) (:?exp modulus-exp))
+               [modulus-exp m]))))))
 
 (defn check-foaf-ssl-cert
   "Checks if the provided certificate is associated to the claimed WebID"
@@ -54,8 +78,7 @@ WHERE {
              public-key (.getPublicKey (aget cert 0))
              exp (.getPublicExponent public-key)
              modulus (.getModulus public-key)
-             foaf-graph (deref-foaf-graph uri)
-             modulus-exp  (first (extract-modulus-exp uri foaf-graph))
+             [modulus-exp foaf-graph] (deref-foaf-graph uri)
              read-exp (:?exp modulus-exp)
              read-modulus (BigInteger. (:?modulus modulus-exp) 16)
              same-exp (= (str exp) (str read-exp))
@@ -72,16 +95,31 @@ WHERE {
   [handler]
   (proxy [AbstractHandler] []
     (handle [target ^Request request response dispatch]
-      (let [cert (.getAttribute request "javax.servlet.request.X509Certificate")
-            foaf-ssl-result (check-foaf-ssl-cert cert)
-            request-map  (servlet/build-request-map request)]
-        (if (nil? foaf-ssl-result)
-          {:status 400
-           :body "not a valid FOAF-SSL request"}
-          (let [[web-id foaf-graph] foaf-ssl-result
+      (let [_ (println (str "----------------------------------------------------------------------"))
+            _ (println (.getPathInfo request))
+            _ (println (str "----"))
+            _ (println (.getPathTranslated request))
+            _ (println (str "----------------------------------------------------------------------"))
+            cert (.getAttribute request "javax.servlet.request.X509Certificate")]
+        (if cert
+          (let [foaf-ssl-result (check-foaf-ssl-cert cert)
+                request-map  (servlet/build-request-map request)]
+            (if (nil? foaf-ssl-result)
+              {:status 400
+               :body "not a valid FOAF+SSL request"}
+              (let [[webid foaf-graph] foaf-ssl-result
+                    augmented-request-map (-> request-map
+                                              (assoc :webid webid)
+                                              (assoc :foaf foaf-graph))
+                    response-map (handler augmented-request-map)]
+                (when response-map
+                  (servlet/update-servlet-response response response-map)
+                  (.setHandled request true)))))
+
+          (let [request-map (servlet/build-request-map request)
                 augmented-request-map (-> request-map
-                                          (assoc :web-id web-id)
-                                          (assoc :foaf foaf-graph))
+                                          (assoc :webid nil)
+                                          (assoc :foaf nil))
                 response-map (handler augmented-request-map)]
             (when response-map
               (servlet/update-servlet-response response response-map)

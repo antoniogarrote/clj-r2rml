@@ -25,6 +25,15 @@
   return self;
 }
 
+-(CPString)cvUri
+{
+  var toReturn = [self uri];
+  toReturn = toReturn.split("#self")[0];
+  toReturn = toReturn.replace("cvapi:",[Backend apiEndpoint]+"/");
+  toReturn = toReturn.replace("api/candidates", "cvs");
+  return toReturn;
+}
+
 -(CPString)kind
 {
   return "Candidate";
@@ -58,6 +67,17 @@
 {
   triples["vcard:tel"] = data;
   [self modified];
+}
+
+-(void)setEmail:(CPString)data
+{
+  triples["vcard:email"] = data;
+  [self modified];
+}
+
+-(CPString)email
+{
+  return triples["vcard:email"];
 }
 
 -(CPString)familyName

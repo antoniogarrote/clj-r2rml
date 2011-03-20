@@ -10,7 +10,15 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110310094033) do
+ActiveRecord::Schema.define(:version => 20110319090539) do
+
+  create_table "acls", :force => true do |t|
+    t.string "maker"
+    t.string "graph"
+    t.string "read"
+    t.string "write"
+    t.string "rdftype"
+  end
 
   create_table "candidates", :force => true do |t|
     t.string   "name"

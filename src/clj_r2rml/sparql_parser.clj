@@ -15,12 +15,14 @@
 
 
 (defn parse-sparql [query]
-  (let [*ctx* (Context/enter)
+  (let [_ (println (str "QUERY BEFORE: " query))
+        *ctx* (Context/enter)
         jsfn (.get *scope* "sparql_query" *scope*)
         args (make-array String 1)]
     (aset args 0 query)
     (let [result (.call jsfn *ctx* *scope* *scope* args)]
       (println (Context/toString result))
       (Context/exit)
+      (println (str "JSON!!!! " result))
       (read-json result))))
 

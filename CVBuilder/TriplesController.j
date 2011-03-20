@@ -36,7 +36,10 @@
 
 -(void)reloadWin
 {
-  win = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,290) styleMask:CPTitledWindowMask|CPClosableWindowMask];
+  var winWidth = 699;
+  var winHeight = 400;
+
+  win = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,winWidth,winHeight) styleMask:CPTitledWindowMask|CPClosableWindowMask];
   [win setTitle:@"RDF viewer"];
   [win setShowsResizeIndicator:YES];
   [win setDelegate:self];
@@ -44,32 +47,32 @@
   [contentView setBackgroundColor:[CPColor colorWithHexString:@"e6e8ea"]];
 
  // create a CPScrollView that will contain the CPTableView
-  var scrollView = [[CPScrollView alloc] initWithFrame:[contentView frame]];
+  var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0,0,winWidth, winHeight)];
   [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-  table = [[CPTableView alloc] initWithFrame:[contentView bounds]];
+  table = [[CPTableView alloc] initWithFrame:CGRectMake(0,0,winWidth, winHeight)];
   [table setDataSource:self];
   [table setUsesAlternatingRowBackgroundColors:YES];
 
   var column = [[CPTableColumn alloc] initWithIdentifier:@"Subject"];
   [[column headerView] setStringValue:"Subject"];
-  [column setWidth:125.0];
+  [column setWidth:366.0];
   [table addTableColumn:column];
 
   var column = [[CPTableColumn alloc] initWithIdentifier:@"Predicate"];
   [[column headerView] setStringValue:"Predicate"];
-  [column setWidth:125.0];
+  [column setWidth:133.0];
   [table addTableColumn:column];
 
   var column = [[CPTableColumn alloc] initWithIdentifier:@"Object"];
   [[column headerView] setStringValue:"Object"];
-  [column setWidth:125.0];
+  [column setWidth:200.0];
   [table addTableColumn:column];
 
-  var column = [[CPTableColumn alloc] initWithIdentifier:@"Graph"];
-  [[column headerView] setStringValue:"Graph"];
-  [column setWidth:125.0];
-  [table addTableColumn:column];
+//  var column = [[CPTableColumn alloc] initWithIdentifier:@"Graph"];
+//  [[column headerView] setStringValue:"Graph"];
+//  [column setWidth:125.0];
+//  [table addTableColumn:column];
 
 
   [scrollView setDocumentView:table];
@@ -108,9 +111,10 @@
             return j
           } else if([aColumn identifier] === @"Object") {
             return triples[j];
-          } else if([aColumn identifier] === @"Graph") {
-            return @"graph"
           }
+//          else if([aColumn identifier] === @"Graph") {
+//            return @"graph"
+//          }
         }
       }
     }

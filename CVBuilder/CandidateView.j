@@ -4,11 +4,12 @@
  *
  *  Created by Antonio Garrote on 3/6/11.
  *  Copyright Universidad de Salamanca 2011. All rights reserved.
-*/
+ */
 
 @import <AppKit/AppKit.j>
 @import <Foundation/Foundation.j>
 @import "Candidate.j"
+@import "DatePicker.j"
 
 @implementation CandidateView : CPView
 {
@@ -28,9 +29,12 @@
         CPTextField editFamilyNameField;
         CPTextField editAddressFieldLabel;
         CPTextField editAddressField;
-        CPTextField editTelephoneFieldLabel
+        CPTextField editTelephoneFieldLabel;
         CPTextField editTelephoneField;
+        CPTextField emailFieldLabel;
+        CPTextField emailField;
         CPTextField editBDayFieldLabel;
+        DatePicker  editBDayDatePicker;
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -44,6 +48,9 @@
       telephoneField      = [[CPTextField alloc] initWithFrame:CGRectMake(140, 110, 400, 20)];
       bdayFieldLabel      = [[CPTextField alloc] initWithFrame:CGRectMake(40, 130, 100, 20)];
       bdayField           = [[CPTextField alloc] initWithFrame:CGRectMake(140, 130, 400, 20)];
+      emailFieldLabel     = [[CPTextField alloc] initWithFrame:CGRectMake(40, 150, 100, 25)];
+      emailField	  = [[CPTextField alloc] initWithFrame:CGRectMake(140, 150, 400, 25)];
+
 
       editBtn             = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(frame) - 130, 30, 80, 24)];
       [editBtn setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
@@ -61,6 +68,7 @@
   [addressField setStringValue:[candidate address]];
   [telephoneField setStringValue:[candidate telephone]];
   [bdayField setStringValue:[candidate birthDay]];
+  [emailField setStringValue:[candidate email]];
 }
 
 -(void)setCandidate:(Candidate)aCandidate
@@ -104,6 +112,16 @@
         [self addSubview: bdayFieldLabel];
         [self addSubview: bdayField];
 
+        // email
+        [emailFieldLabel setStringValue: @"Email: "];
+        [emailFieldLabel setBackgroundColor:[CPColor whiteColor]];
+        [emailFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:15]];
+
+        [emailField setBackgroundColor:[CPColor whiteColor]];
+        [emailField setFont:[CPFont fontWithName:@"Arial" size:15]];
+        [self addSubview: emailFieldLabel];
+        [self addSubview: emailField];
+
 
         [self updateCandidate];
 
@@ -124,6 +142,8 @@
   [telephoneFieldLabel setBackgroundColor:selectedColor];
   [bdayField setBackgroundColor:selectedColor];
   [bdayFieldLabel setBackgroundColor:selectedColor];
+  [emailField setBackgroundColor:selectedColor];
+  [emailFieldLabel setBackgroundColor:selectedColor];
 
   // Edit button
   [editBtn setFrame:CGRectMake(CGRectGetWidth([self frame]) - 130, 30, 80, 24)];
@@ -141,13 +161,15 @@
   [telephoneFieldLabel setBackgroundColor:unselectedColor];
   [bdayField setBackgroundColor:unselectedColor];
   [bdayFieldLabel setBackgroundColor:unselectedColor];
+  [emailField setBackgroundColor:unselectedColor];
+  [emailFieldLabel setBackgroundColor:unselectedColor];
 
   [editBtn removeFromSuperview];
 }
 
 -(void)editCandidate:(id)sender {
 
-  editWin = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,270) styleMask:CPTitledWindowMask];
+  editWin = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,500,310) styleMask:CPTitledWindowMask];
   var contentView = [editWin contentView];
   [contentView setBackgroundColor:[CPColor colorWithHexString:@"e6e8ea"]];
 
@@ -220,11 +242,24 @@
   [editBDayFieldLabel setStringValue:@"Birth Day"];
   [editBDayFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
 
-  editBDayField = [[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
-  [editBDayField setStringValue:[candidate birthDay]];
-  [editBDayField setFont:[CPFont fontWithName:@"Arial" size:14]];
-  [editBDayField setBackgroundColor:[CPColor whiteColor]];
-  [editBDayField setEditable:YES];
+  editBDayDatePicker =[[DatePicker alloc] initWithFrame:CGRectMake(xPosField -5, initialVPos, widthField+5, height)];
+  [editBDayDatePicker displayPreset:1];
+  if([candidate birthDay]) {
+    var date = new Date([candidate birthDay]);
+    [editBDayDatePicker setDate:date];
+  }
+
+  initialVPos = initialVPos + vInc + 5;
+
+  editEmailFieldLabel = [[CPTextField alloc] initWithFrame:CGRectMake(xPosLabel, initialVPos, widthLabel, height)];
+  [editEmailFieldLabel setStringValue:@"Email"];
+  [editEmailFieldLabel setFont:[CPFont boldFontWithName:@"Arial" size:14]];
+
+  editEmailField = [[CPTextField alloc] initWithFrame:CGRectMake(xPosField, initialVPos, widthField, height)];
+  [editEmailField setStringValue:[candidate email]];
+  [editEmailField setFont:[CPFont fontWithName:@"Arial" size:14]];
+  [editEmailField setBackgroundColor:[CPColor whiteColor]];
+  [editEmailField setEditable:YES];
 
   initialVPos = initialVPos + vInc;
 
@@ -238,7 +273,9 @@
   [contentView addSubview:editTelephoneFieldLabel];
   [contentView addSubview:editTelephoneField];
   [contentView addSubview:editBDayFieldLabel];
-  [contentView addSubview:editBDayField];
+  [contentView addSubview:editBDayDatePicker];
+  [contentView addSubview:editEmailFieldLabel];
+  [contentView addSubview:editEmailField];
 
 
 
@@ -274,7 +311,8 @@
   [candidate setFamilyName:[editFamilyNameField stringValue]];
   [candidate setTelephone:[editTelephoneField stringValue]];
   [candidate setAddress:[editAddressField stringValue]];
-  [candidate setBirthDay:[editBDayField stringValue]];
+  [candidate setBirthDay:[editBDayDatePicker dateString]];
+  [candidate setEmail:[editEmailField stringValue]];
 
   [editWin close];
   [CPApp abortModal];
