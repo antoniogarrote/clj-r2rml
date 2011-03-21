@@ -47,6 +47,35 @@
   id candidateRectHeight;
 }
 
++ (void)networkError
+{
+  [CPApp abortModal];
+  win = [[CPWindow alloc] initWithContentRect:CGRectMake(200,100,400,200) styleMask:CPTitledWindowMask];
+  content = [win contentView];
+  [win setTitle:@"Network error"];
+
+  notification = [[CPTextField alloc] initWithFrame:CGRectMake(140,45,380,80)];
+  [notification setStringValue:@"There seems to be a network error.\r\n\r\nCheck you FOAF+SSL certificate in order \r\nto use CVBuilder"];
+
+  errorButton = [[CPButton alloc] initWithFrame:CGRectMake(110, 150, 180, 24)];
+  [errorButton setTitle:@"Read FOAF+SSL tutorial"];
+  [errorButton setTarget:self];
+  [errorButton setAction:@selector(redirectTutorial:)];
+
+  img = [[CPImage alloc] initWithContentsOfFile:@"Resources/error.png"  size:CGSizeMake(100,100)];
+  imageView = [[CPImageView alloc] initWithFrame:CGRectMake(20,20,100,100)];
+  var imageSize = [img size]; 
+  [imageView setFrameSize:imageSize]; 
+  [imageView setImage:img];
+    
+  [content addSubview:notification];
+  [content addSubview:errorButton];
+  [content addSubview:imageView];
+
+  [win makeKeyAndOrderFront:self];
+  [CPApp runModalForWindow:win];  
+}
+
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
   // data
@@ -399,6 +428,10 @@
     return toolbarItem;
 }
 
++(void)redirectTutorial:(id)sender {
+  window.location="http://antoniogarrote.com/cvbuilder/foaf_tutorial.html";
+}
+
 -(void)addEducationSection:(id)sender {
   var education  = [[Education alloc] initForCandidate:candidate];
   [Backend registerNode:education];
@@ -438,6 +471,7 @@
 
 -(void)doXHTML:(id)sender {
   var uri = [candidate cvUri];
+  uri = uri.replace("https","http");
   window.open(uri,'preview CV');
 }
 

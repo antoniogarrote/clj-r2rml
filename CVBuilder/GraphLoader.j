@@ -100,7 +100,6 @@
   uriTmp = uriTmp.replace("cvapi:",[Backend apiEndpoint]+"/");
   var endpoint = [uriTmp stringByAppendingString: @"/jobs"];
 
-
   var request = [[CPURLRequest alloc] initWithURL:endpoint];
   [request setHTTPMethod:@"GET"];
   [request setValue:"application/json" forHTTPHeaderField:@"Content-Type"];
@@ -118,10 +117,13 @@
   [CPApp abortModal];
 }
 
-// Connection handler
 
--(void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data
-{
+-(void)connection:(CPURLConnection)connection didFailWithError:(CPString)error {
+  [AppController networkError];
+}
+
+
+-(void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data {
 
   objs = [data objectFromJSON];
 

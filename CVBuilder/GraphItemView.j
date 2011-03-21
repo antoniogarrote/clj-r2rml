@@ -47,6 +47,7 @@
 {
   var uri = graphUri.split("#self")[0];
   uri = uri.replace("api/candidates", "cvs");
+  uri = uri.replace("https","http");
   window.open(uri,'preview CV');
 }
 
