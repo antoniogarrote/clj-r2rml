@@ -127,7 +127,6 @@
   ([update-column-contexts]
      (reduce (fn [ac ucc]
                (if (some (fn [old-ucc]
-                           (println (str "checking [" (:column ucc) "," (:value ucc) "] vs [" (:column old-ucc) "," (:value old-ucc) "]"))
                            (if (and (= (:column ucc) (:column old-ucc))
                                     (= (:value ucc) (:value old-ucc)))
                              true
@@ -161,13 +160,6 @@
 (defn conflicting-contexts?
   "Checks if two column context are conflicting"
   ([column-context-a column-context-b]
-     (println (str "CONFLICTING? " (and (= (:column column-context-a) (:column column-context-b))
-                                        (not= (:value column-context-a) (:value column-context-b)))
-                   " "
-                   [(:column column-context-a) (:column column-context-b)]
-                   " "
-                   [(:value column-context-a) (:value column-context-b)]
-                   ))
      (and (= (:column column-context-a) (:column column-context-b))
           (not= (:value column-context-a) (:value column-context-b)))))
 
@@ -280,9 +272,7 @@
 
 (defn compatible-table-mappers-for-triple
   ([triple table-mappers]
-     (let [_ (println (str "CHECKING COMPATIBILITY OF TRIPLE: " (vec triple)))
-           compatible-table-mappers (get-compatible-table-mappers triple table-mappers)
-           _ (if (empty? compatible-table-mappers) (println (str " -> NO COMPATIBLE")) (println (str " -> COMPATIBLE")))]
+     (let [compatible-table-mappers (get-compatible-table-mappers triple table-mappers)]
        (sort-table-mappers-map compatible-table-mappers))))
 
 (defn get-table-context-in-schema-context
@@ -399,7 +389,6 @@
      (let [grouped-triples (group-triples triples)]
        (loop [grouped-triples grouped-triples
               schema-contexts (:update-schema-contexts update-context)]
-         (println (str "IN LOOP --> " (vec schema-contexts)))
          (if (empty? grouped-triples)
            (assoc update-context :update-schema-contexts schema-contexts)
            (recur (rest grouped-triples)
@@ -434,14 +423,11 @@
 
 (defn translate-insert
   ([triples table-mappers]
-     (let [_ (println (str "TRIPLES SPARQL UPDATE: " (vec triples)))
-           _ (println (str "TABLE MAPPERS: " table-mappers))
-           initial-update-schema-context (UpdateSchemaContext. (map (fn [table-mapper] (clj-r2rml.sparql-update.UpdateTableContext. table-mapper [])) table-mappers))
+     (let [initial-update-schema-context (UpdateSchemaContext. (map (fn [table-mapper] (clj-r2rml.sparql-update.UpdateTableContext. table-mapper [])) table-mappers))
            initial-update-context (UpdateContext.
                                    table-mappers
                                    [initial-update-schema-context])
-           update-context (generate-update-contexts triples initial-update-context)
-           _ (println (str "GENERATED UPDATE-CONTEXT: " (vec update-context)))]
+           update-context (generate-update-contexts triples initial-update-context)]
        (if (nil? update-context)
          (throw (Exception. "Cannot generate update contexts for insertion"))
          (let [update-schema-context (first (:update-schema-contexts update-context))
@@ -713,7 +699,6 @@
 
 (defn AND
   ([& gps]
-     (println (str "AND FOR " gps))
      (when (= 0 (count gps)) (throw (Exception. (str "EMPTY AND"))))
      (if (= 2 (count gps))
        (fn [triple-mappers]

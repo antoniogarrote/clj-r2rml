@@ -21,7 +21,6 @@
         args (make-array String 1)]
     (aset args 0 doc)
     (let [result (.call jsfn *ctx* *scope-turtle* *scope-turtle* args)]
-      (println (Context/toString result))
       (Context/exit)
       (read-json result))))
 
@@ -37,11 +36,9 @@
            env (atom (make-empty-ns-env))
            quads (atom [])]
        (doseq [token parsed-doc]
-         (println (str "CHECKING: " token))
          (condp = (:token token)
              "base" (swap! env #(update-base-env % (:value token)))
              "prefix" (swap! env #(add-prefix-env % (:prefix token) (:local token)))
              "triples" (insert-triples (:triplesContext token) env quads)
              (throw (Exception. (str "Unknown token " (:token token))))))
-       (println (str "RETURNING " (vec @quads)))
        @quads)))

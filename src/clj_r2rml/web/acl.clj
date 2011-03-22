@@ -17,8 +17,7 @@
        (if (empty? result)
          true
          (let [permission-granted (get (first result) permission)
-               maker (get (first result) :maker)
-               _ (println (str "ACL-CHECK -> permission " permission-granted " maker " maker " webid " webid))]
+               maker (get (first result) :maker)]
            (condp = (keyword permission-granted)
                :owner (= webid maker)
                :all   true

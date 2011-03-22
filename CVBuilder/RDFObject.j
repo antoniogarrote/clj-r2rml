@@ -121,7 +121,6 @@ var DELETED = 2;
   networkOperation = @"LOAD";
 
   var urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
-  [urlConnection start];
 }
 
 -(void)saveToEndPointWithNetworkDelegate:(id)aDelegate
@@ -138,7 +137,6 @@ var DELETED = 2;
 
   networkOperation = @"CREATE";
   urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
-  [urlConnection start];
 }
 
 -(void)updateToEndPointWithNetworkDelegate:(AppController)aDelegate
@@ -158,8 +156,7 @@ var DELETED = 2;
   [request setValue:"application/json" forHTTPHeaderField:@"Content-Type"];
 
   networkOperation = @"UPDATE"
-    urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
-  [urlConnection start];
+  urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
 }
 
 -(void)deleteToEndPointWithNetworkDelegate:(AppController)aDelegate
@@ -179,8 +176,7 @@ var DELETED = 2;
   [request setValue:"application/json" forHTTPHeaderField:@"Content-Type"];
 
   networkOperation = @"DELETE"
-    urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
-  [urlConnection start];
+  urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
 }
 
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data

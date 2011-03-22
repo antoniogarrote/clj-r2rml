@@ -35,7 +35,6 @@
 
 (defn from-env
   ([env k id]
-     (println (str "from env " env " key " k " id " id))
      (get (deref (k env)) id)))
 
 (defn extract-path-from-uri
@@ -54,25 +53,20 @@
 
 (defn template-to-graph-uri
   ([uri-template args]
-     (println (str "hey -> " args " vs " uri-template))
      (reduce (fn [uri [k v]]
-               (println (str "replacing " k " in " v " str: " uri))
                (clojure.contrib.string/replace-str (str "{" (name k) "}") (str v) uri))
              uri-template
              args)))
 
 (defn select-content-type
   ([request]
-     (println (str "PARAMS: " request))
-     (println (params request))
-     (if (blank? (get (params request) "_format"))
+     (if (or (blank? (get (params request) "_format")) (blank? (get (params request))))
        (let [content-types (or (or (if-let [content (or (get (:headers request) "content-type") (get (:headers request) "Content-Type"))]
                                      (map (fn [qs] (first (clojure.contrib.string/split #";" qs))) (clojure.contrib.string/split #"," content)))
                                    (if-let [accept (or (get (:headers request) "accept") (get (:headers request) "Accept"))]
                                      (map (fn [qs] (first (clojure.contrib.string/split #";" qs))) (clojure.contrib.string/split #"," accept))))
                                ["*/*"])
-             formats(map (fn [content-type] (keyword (second (clojure.contrib.string/split #"/" content-type)))) content-types)
-             _ (println (str "FORMATS: " (first formats)))]
+             formats(map (fn [content-type] (keyword (second (clojure.contrib.string/split #"/" content-type)))) content-types)]
          (first formats))
        (keyword (get (params request) "_format")))))
 
@@ -87,7 +81,6 @@
 
 (defn format-response
   ([triples media-type request nss]
-     (println (str "MEDIA TYPE " media-type))
      (condp = (name media-type)
          "json" (to-json-ld triples nss (get (params request) "_callback"))
          "js" (to-json-ld triples nss (get (params request) "_callback"))
@@ -95,19 +88,12 @@
 
 (defn resource-get
   ([request resource env sparql-engine]
-     (let [_ (println (str "REQUEST: " request))
-           _ (println (str "PARAMS: " (:params request)))
-           _ (println (str "PARAMS2: " (params request)))
-           _ (println (str "template " (:template resource)))
-           media-type (select-content-type request)
-           _ (println (str "MEDIA TYPE: " media-type))
+     (let [media-type (select-content-type request)
            table-mapper (make-table-mapper (from-env env :mappings (:mapping resource)))
-           _ (println (str "TABLE MAPPING" (from-env env :mappings (:mapping resource))))
            sparql-engine (assoc sparql-engine :table-mappers [table-mapper])
            graph (template-to-graph-uri (or (:mappedUriTemplate resource) (:template resource)) (or (params request) {}))]
            (if (allowed? (:webid request) graph :read (:sql-backend sparql-engine))
-             (let [_ (println (str "WITH GRAPH " graph " -> " (str "SELECT ?s ?p ?o { GRAPH <" graph "> { ?s ?p ?o } }")))
-                   triples (execute sparql-engine (str "SELECT ?s ?p ?o { GRAPH <" graph "> { ?s ?p ?o } }"))]
+             (let [triples (execute sparql-engine (str "SELECT ?s ?p ?o { GRAPH <" graph "> { ?s ?p ?o } }"))]
                {:status 200
                 :body (format-response triples media-type request (:namespaces (:sql-backend sparql-engine)))})
              {:status 401
@@ -151,8 +137,7 @@
 (defn run-minter
   ([minter resource params triples]
      (let [params-p (reduce (fn [ps comp]
-                              (let [_ (println (str "PARAMS: " params))
-                                    value (condp = (:uri_generator comp)
+                              (let [value (condp = (:uri_generator comp)
                                               :UniqueIdInt (redis/with-server *redis-server* (redis/incr *redis-counter*))
                                               :BeautifyUri (beautify-uri (:properties comp) triples)
                                               :Params (get params (:mapped_component_value comp))
@@ -174,7 +159,6 @@
   ([quads env]
      (if (> (count quads) 0)
        (str (reduce (fn [sparql t]
-                      (println (str "T: " t))
                       (str sparql
                            " " (normalize-term-string (nth t 0) env)
                            " " (normalize-term-string (nth t 1) env)
@@ -197,27 +181,19 @@
   ([request resource env sparql-engine]
      (let [body (clojure.contrib.io/slurp* (:body request))
            media-type (select-content-type request)
-           _ (println (str "media type " media-type))
            triples (parse-body body media-type)
            table-mapper (make-table-mapper (from-env env :mappings (:mapping resource)))
-           sparql-engine (assoc sparql-engine :table-mappers [table-mapper])
-           _ (println (str "TRIPLES POST: " (vec triples)))]
+           sparql-engine (assoc sparql-engine :table-mappers [table-mapper])]
        (if (valid-triples? triples)
          (let [uri (generate-graph-uri resource request env triples)
                graph-uri (template-to-graph-uri (or (:mappedUriTemplate resource) (:template resource)) (or (params request) {}))
-               _ (println (str "GRAPH " graph-uri " -> " (or (:mappedUriTemplate resource) (:template resource)) " vs " resource))
                subject-uri (str uri "#self")]
            (if (allowed? (:webid request) graph-uri :write (:sql-backend sparql-engine))
              (let [triples-p (map (fn [[s p o g]] [{:token "uri" :value subject-uri} p o {:token "uri" :value graph-uri}]) triples)
-                   _ (println (str "TRIPLESP " (vec triples-p)))
                    sparql (build-sparql-insert-data triples-p env)
-                   _ (println (str "SPARQL: " sparql))
-                   _ (println (str "ENGINE: " (:table-mappers  sparql-engine)))
-                   rows (execute sparql-engine sparql)
-                   _ (println (str "RESULTS: " rows))]
+                   rows (execute sparql-engine sparql)]
                (if (> rows 0)
                  (do
-                   (println (str "RESOURCE " resource))
                    (grant-permissions subject-uri (:resource-type resource) (:webid request) :all :owner (:sql-backend sparql-engine))
                    {:status 201
                     :headers {"Location" uri}
@@ -233,26 +209,18 @@
   ([request resource env sparql-engine]
      (let [body (clojure.contrib.io/slurp* (:body request))
            media-type (select-content-type request)
-           _ (println (str "media type " media-type))
-           _ (println (str "BODY: " body))
            triples (parse-body body media-type)
            table-mapper (make-table-mapper (from-env env :mappings (:mapping resource)))
-           sparql-engine (assoc sparql-engine :table-mappers [table-mapper])
-           _ (println (str "TRIPLES PUT: " (vec triples)))
-           _ (println (str "???? " (valid-triples-update? triples)))]
+           sparql-engine (assoc sparql-engine :table-mappers [table-mapper])]
        (if (valid-triples-update? triples)
          (let [uri (first (clojure.contrib.string/split #"#self" (:value (first (first triples)))))
                graph-uri (template-to-graph-uri  (or (:mappedUriTemplate resource) (:template resource)) (or (params request) {}))
                subject-uri (str uri "#self")]
            (if (allowed? (:webid request) graph-uri :write (:sql-backend sparql-engine))
-             (let [triples-p (map (fn [[s p o g]] [s p o {:token "uri" :value graph-uri}]) triples)
-                   _ (println (str "GRAPHS: uri " uri " subject-uri " subject-uri " graph uri " graph-uri ))]
+             (let [triples-p (map (fn [[s p o g]] [s p o {:token "uri" :value graph-uri}]) triples)]
                (if (= graph-uri subject-uri)
                  (let [sparql (build-sparql-update-data graph-uri triples-p env)
-                       _ (println (str "SPARQL: " sparql))
-                       _ (println (str "ENGINE: " (:table-mappers  sparql-engine)))
-                       rows (execute sparql-engine sparql)
-                       _ (println (str "RESULTS: " rows))]
+                       rows (execute sparql-engine sparql)]
                    (if (> rows 0)
                      {:status 200
                       :headers {"Location" subject-uri}
@@ -269,16 +237,12 @@
 (defn resource-delete
   ([request resource env sparql-engine]
      (let [media-type (select-content-type request)
-           _ (println (str "media type " media-type))
            table-mapper (make-table-mapper (from-env env :mappings (:mapping resource)))
            sparql-engine (assoc sparql-engine :table-mappers [table-mapper])
            graph-uri (template-to-graph-uri  (or (:mappedUriTemplate resource) (:template resource)) (or (params request) {}))]
        (if (allowed? (:webid request) graph-uri :write (:sql-backend sparql-engine))
          (let [sparql (build-sparql-delete-data graph-uri env)
-               _ (println (str "SPARQL: " sparql))
-               _ (println (str "ENGINE: " (:table-mappers  sparql-engine)))
-               rows (execute sparql-engine sparql)
-               _ (println (str "RESULTS: " rows))]
+               rows (execute sparql-engine sparql)]
            (revoke-permissions graph-uri (:webid request) (:sql-backend sparql-engine))
            {:status 200 :body "deleted"})
          {:status 401 :body "not authorized"}))))
@@ -307,17 +271,17 @@
 
 (defn build-acl-check-triples
   ([request rdf-type *sql-context* *rdf-ns*]
-     (let [media-type (select-content-type request)
-           _ (println (str "QUERYING ACL OWNERSHIP " (:webid request) " " rdf-type))
-           graphs (owned-by (:webid request) rdf-type *sql-context*)]
-       (let [triples (map (fn [{graph :graph}]
-                            {:subject   {:token "uri" :value (:webid request)}
-                             :predicate {:token "uri" :value "http://xmlns.com/foaf/0.1/maker"}
-                             :object    {:token "uri" :value graph}
-                             :graph     {:token "uri" :value "http://ldapi.com/acls"}})
-                          graphs)
-             _ (str "TO FORMAT RESPONSE " triples)
-             response-body (format-response triples media-type request *rdf-ns*)
-             _ (println (str "CVS response: " response-body))]
-         {:status 200
-          :body response-body}))))
+     (if (nil? (:webid request))
+       {:status 401
+        :body "forbidden"}
+       (let [media-type (select-content-type request)
+             graphs (owned-by (:webid request) rdf-type *sql-context*)]
+         (let [triples (map (fn [{graph :graph}]
+                              {:subject   {:token "uri" :value (:webid request)}
+                               :predicate {:token "uri" :value "http://xmlns.com/foaf/0.1/maker"}
+                               :object    {:token "uri" :value graph}
+                               :graph     {:token "uri" :value "http://ldapi.com/acls"}})
+                            graphs)
+               response-body (format-response triples media-type request *rdf-ns*)]
+           {:status 200
+            :body response-body})))))

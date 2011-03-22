@@ -21,7 +21,6 @@
                                (apply AND (map #(build-abstract-query-tree % env) (:patterns pattern))))
          "basicgraphpattern" (if (= 1 (count (:triplesContext pattern)))
                                (dsl-triple (let [triple(normalize-triple (first (:triplesContext pattern)) env)]
-                                             (println (str "NORMALIZED: " (vec triple)))
                                              triple) )
                                (apply AND (map #(dsl-triple (normalize-triple % env)) (:triplesContext pattern))))
          (if (nil? (:predicate pattern))
@@ -30,22 +29,17 @@
 
 (defn project-results
   ([projection results-map]
-     (println (str "PROJECTING " projection " for " results-map))
      (if (and (= 1 (count projection)) (= "*" (:kind (first projection))))
        results-map
-       (let [vars (reverse (map (fn [var] (println var) (keyword (:value (:value var)))) projection))]
+       (let [vars (reverse (map (fn [var] (keyword (:value (:value var)))) projection))]
          (map (fn [result] (reduce (fn [tuple v] (assoc tuple v (infer-result-kind (get result v)))) {} vars)) results-map)))))
 
 (defn execute-query-query
   ([parsed-query sql-context table-mappers]
      (let [env (make-ns-env parsed-query)
-           _ (println (str "PARSED QUERY " parsed-query))
            pattern (:pattern (first (:units parsed-query)))
-           _ (println (str "PATTERN " pattern))
            aqt (build-abstract-query-tree pattern env)
-           _ (println (str "TODO " (aqt table-mappers) " FOR " aqt))
            sql (translate (aqt table-mappers))]
-       (println sql)
        (if (nil? sql)
          (throw (Exception. "The query cannot be executed"))
          (let [result (with-context-connection sql-context
@@ -87,14 +81,10 @@
 (defn execute-delete-where-query
   ([unit env table-mappers]
      (let [normalized-quads (update-unit-to-triples unit env)
-           _ (println (str "normalized quads: " (vec normalized-quads)))
-           results (select-quad-pattern normalized-quads table-mappers)
-           _ (println (str "results: " results))]
+           results (select-quad-pattern normalized-quads table-mappers)]
        (doseq [bindings results]
          (let [bound-triples (apply-bindings normalized-quads bindings)
-               _ (println (str "bound triples: " (vec bound-triples)))
-               sql-query (translate-delete bound-triples table-mappers false)
-               _ (println (str "query " (vec sql-query)))]
+               sql-query (translate-delete bound-triples table-mappers false)]
            (if (coll? sql-query)
              (apply do-commands sql-query)
              (do-commands sql-query)))))))
@@ -110,12 +100,10 @@
              (let [sql-query (condp = (:kind unit)
                                  "insertdata" (translate-insert (update-unit-to-triples unit env) table-mappers)
                                  "deletedata" (translate-delete (update-unit-to-triples unit env) table-mappers false)
-                                 (throw (Exception. (str "Unknown update query " (:kind unit)))))
-                   _ (println (str "SQL QUERIES: " (if (coll? sql-query) (vec sql-query) sql-query)))]
+                                 (throw (Exception. (str "Unknown update query " (:kind unit)))))]
                (let [result (if (coll? sql-query)
                               (apply do-commands sql-query)
-                              (do-commands sql-query))
-                     _ (println (str "RESULTS HERE: " result))]
+                              (do-commands sql-query))]
                  (when (=  result 0) (throw (Exception. "wrong update")))
                  (swap! rows #(+ % (apply + result)))))))
          @rows))))

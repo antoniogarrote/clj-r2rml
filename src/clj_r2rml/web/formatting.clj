@@ -22,9 +22,7 @@
 (defn to-nodes
   ([triples]
      (reduce (fn [nodes triple]
-               (let [_ (println (str "*** Triple: " triple))
-                     triple (vals triple)
-                     _ (println (str "*** Triple after: " triple))]
+               (let [triple (vals triple)]
                  (if-let [node (check-node nodes triple)]
                    (do (update-node node triple)
                        nodes)
@@ -45,7 +43,6 @@
 (defn update-ns
   ([nodes ns]
      (doseq [n nodes]
-       (println (str "node: " @n))
        (swap! n (fn [m] (reduce (fn [ac [k v]]  (assoc ac k v)) {} (map (fn [[k v]] [(update-ns-term k ns) (if (coll? v)
                                                                                                           (map #(update-ns-term % ns) v)
                                                                                                           (update-ns-term v ns))]) m)))))
@@ -54,24 +51,19 @@
 (defn compact-ns
   ([nodes ns-orig]
      (for [node nodes]
-       (let [_ (println (str "node vale " @node))
-             [nodep nss](reduce (fn [[ac nss] [k v]]
-                                  (let [_ (println (str "IT K:" k " V:" v))
-                                        kp (if (coll? k)
+       (let [[nodep nss](reduce (fn [[ac nss] [k v]]
+                                  (let [kp (if (coll? k)
                                              (clojure.contrib.string/join ":" k)
                                              k)
                                         nssp (if (coll? k)
                                                (assoc nss (first k) ((keyword (first k)) ns-orig))
                                                nss)
-                                        _ (println (str "V BEFORE: " v))
                                         vp (if (coll? v)
                                              (if (coll? (first v)) v [v])
                                              [v])
-                                        _ (println (str "V AFTER: " (vec vp)))
                                         vpp (map (fn [v]  (if (coll? v)
                                                            (clojure.contrib.string/join ":" v)
                                                            v)) vp)
-                                        _ (println (str "VPP... " (vec vpp)))
                                         nsspp (reduce (fn [m v] (if (coll? v)
                                                                  (assoc m (first v) ((keyword (first v)) ns-orig))
                                                                  m))
@@ -83,8 +75,6 @@
 (defn to-json-ld
   ([triples ns jsonp]
      (let [nodes (to-nodes triples)
-           _ (println (str "TO JSONFY "  (update-ns nodes ns)))
-           _ (println (str "BEFORE JSONFY " (vec (compact-ns (update-ns nodes ns) ns))))
            json (clojure.contrib.json/json-str (compact-ns (update-ns nodes ns) ns))]
        (if (nil? jsonp)
          json
@@ -99,8 +89,7 @@
      (loop [nss nss]
        (if (empty? nss)
          term
-         (let [[ns uri] (first nss)
-               _ (println (str "checking " ns " , " uri  " -> " term))]
+         (let [[ns uri] (first nss)]
            (if (= 0 (.indexOf (safe-name term) (str (safe-name ns) ":")))
              (str uri (second (clojure.contrib.string/split (re-pattern (str (safe-name ns) ":")) (safe-name term))))
              (recur (rest nss))))))))
@@ -121,8 +110,7 @@
 (defn parse-json-ld
   ([triples-json] (parse-json-ld triples-json nil))
   ([triples-json graph]
-     (let [_ (println (str "*** RAW JSON: " triples-json))
-           triples (clojure.contrib.json/read-json triples-json)
+     (let [triples (clojure.contrib.json/read-json triples-json)
            triples (if (map? triples) [triples] triples)
            env {:graph graph :blank-node-id (atom 0)}]
        (apply concat (map (fn [triple] (parse-json-ld-object triple env)) triples)))))

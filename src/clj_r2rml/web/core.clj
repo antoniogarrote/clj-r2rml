@@ -53,7 +53,7 @@
 
 (defroutes main-routes
   (lda-description *test-resources* (clj-r2rml.sparql-engine.SqlSparqlEngine. (make-context *db-spec* *rdf-ns*) []))
-  (GET "/" request (println (str "req >" (params request) "<")) (str "<h1>Hello World3</h1> "))
+  (GET "/" request  (str "<h1>Hello World3</h1> "))
   (function-test)
   (route/not-found "<h1>Page not found</h1>"))
 

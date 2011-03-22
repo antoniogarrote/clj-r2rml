@@ -95,12 +95,7 @@ WHERE {
   [handler]
   (proxy [AbstractHandler] []
     (handle [target ^Request request response dispatch]
-      (let [_ (println (str "----------------------------------------------------------------------"))
-            _ (println (.getPathInfo request))
-            _ (println (str "----"))
-            _ (println (.getPathTranslated request))
-            _ (println (str "----------------------------------------------------------------------"))
-            cert (.getAttribute request "javax.servlet.request.X509Certificate")]
+      (let [cert (.getAttribute request "javax.servlet.request.X509Certificate")]
         (if cert
           (let [foaf-ssl-result (check-foaf-ssl-cert cert)
                 request-map  (servlet/build-request-map request)]

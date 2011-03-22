@@ -14,11 +14,8 @@
      (if (map? endpoint)
        (let [uri (uri-or-blank-id endpoint env)
              r2rml-mapping (:has_r2rml_mapping endpoint)
-             _ (println (str "MAPPNG > " r2rml-mapping))
              graph-mapping (:has_r2rml_graph endpoint)
-             _ (println (str "GRAPH MAPPING > " graph-mapping))
-             mapping (merge r2rml-mapping graph-mapping)
-             _ (println (str "merged mapping -> " mapping))]
+             mapping (merge r2rml-mapping graph-mapping)]
          (swap! (:mappings env) (fn [m] (assoc m uri mapping)))
          uri)
        endpoint)))

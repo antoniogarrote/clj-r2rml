@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE
+   html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+  <head>
+    <title>CVBuilder API</title>
+    <link rel="stylesheet" href="/css/api_tutorial.css"></link>
+  </head>
+  <body>
+
+    <h1>API documentation</h1>
+  <p>
+    This document contains a brief overview of the CVBuilder API.
+  </p>
+
+    <ul>
+      <li><a href='#namespaces'>Namespaces used</a></li>
+      <li><a href='#basicop'>Basic operation</a></li>
+      <li><a href='#non_rest_ext'>Non RESTful extensions</a></li>
+      <li><a href='#mime'>Media types</a>
+      <li><a href='#resources'>Resources</a>
+      <li><a href='#examples'>Examples</a>
+    </ul>
+
+  <h2 id='namespaces'>Namespaces used</h2>
+
+  <p>
+  This is the list of namespaces used in this documentation
+  </p>
+  <dl>
+    <dd>foaf</dd><dt>http://xmlns.com/foaf/0.1/</dt>
+    <dd>vcard</dd><dt>http://www.w3.org/2006/vcard/ns#</dt>
+    <dd>cv</dd><dt>http://rdfs.org/resume-rdf/</dt>
+    <dd>cvapi</dd><dt>https://antoniogarrote.com/cvbuilder/api/</dt>
+  </dl>
+
+  <h2 id='basicop'>Basic operation</h2>
+
+  <p>
+    The API is based in the manipulation of RDF named graphs as
+    RESTful resources.
+  </p>
+
+  <p>
+    The creation of a new graph can be achieved sending a HTTP POST
+    request to the URI template of a resource.
+    The HTTP request must enclose a RDF graph with a single blank node
+    describing the resource to be created.
+  </p>
+
+  <p>
+    If the request is valid, the server will mint a new URI for the
+    resource of the
+    form <code>http://antoniogarrote/cvbuilder/path/to/new_resource#self</code>,
+    create a new graph in the server <code><code>http://antoniogarrote/cvbuilder/path/to/new_resource</code></code>
+    and return it to the client with a 201 response code.
+  </p>
+
+  <p>
+    Graphs can be updated issuing a HTTP PUT request with the new RDF
+    graph for the resource. No blank nodes are allowed in these requests.
+  </p>
+
+  <p>
+    Retrieval of the resource can be achieved issuing a simple GET
+    request to the graph URI.
+  </p>
+
+  <h2 id='non_rest_ext'>Non RESTful extensions</h2>
+  Since the goal of these API is that it can be used by restricted
+  HTTP agents, some extensions have been added to the API protocol.
+
+  <ul>
+    <li>Method overloading using the
+    URL parameter <code>_method</code></li>
+    <li>Media type selection using the URL
+    parameter <code>_format</code></li>
+    <li> JSONP support using the paramter <code>_callback</code></li>
+  </ul>
+
+  <h2 id='mime'>Supported media types</h2>
+
+  By default the API used Turtle as the encoding format for the RDF
+  graphs.
+  Additionally JSON-LD can be used in requests and responses using
+  the <code>application/json</code> media type in
+  the <code>Content-Type</code> and <code>Accept</code> headers or
+  using the <code>_format=json</code> URL parameter.
+
+  <h2 id='resources'>Resources</h2>
+
+  <div class='resource'>
+    <h3>CVs</h3>
+      <h4>Template</h4>
+      <div id='template'><pre>https://antoniogarrote.com/cvbuilder/api/cvs</pre></div>
+
+      <h4>Uniform interface</h4>
+      <ul span='uniform_interface'>
+      <li>GET</li>
+      </ul>
+
+      <h4>Vocabulary</h4>
+      <ul>
+      <li>foaf:maker</li>
+      </ul>
+
+      <h4>Description</h4>
+
+      Retrieves the <code>candidate</code> resources owned by the WebID doing the request.
+  </div>
+
+  <div class='resource'>
+    <h3>Candidate</h3>
+      <h4>Template</h4>
+      <div id='template'><pre>https://antoniogarrote.com/cvbuilder/api/candiates/:id</pre></div>
+
+      <h4>Uniform interface</h4>
+      <ul span='uniform_interface'>
+        <li>GET</li>
+        <li>POST</li>
+        <li>PUT</li>
+        <li>DELETE</li>
+      </ul>
+
+      <h4>Vocabulary</h4>
+      <ul>
+        <li>vc:given-name</li>
+        <li>vc:family-name</li>
+        <li>vc:bday</li>
+        <li>vc:tel</li>
+        <li>vc:adr</li>
+        <li>vc:email</li>
+      </ul>
+
+      <h4>Description</h4>
+
+     The profile of the person described by a r&eacute;sum&eacute;
+  </div>
+
+  <div class='resource'>
+    <h3>Education</h3>
+      <h4>Template</h4>
+      <div id='template'><pre>https://antoniogarrote.com/cvbuilder/api/candiates/:candiate_id/educations/[:id]</pre></div>
+
+      <h4>Uniform interface</h4>
+      <ul span='uniform_interface'>
+        <li>GET</li>
+        <li>POST</li>
+        <li>PUT</li>
+        <li>DELETE</li>
+      </ul>
+
+      <h4>Vocabulary</h4>
+      <ul>
+        <li>cv:startDate</li>
+        <li>cv:endDate</li>
+        <li>cv:studiedIn</li>
+        <li>cv:degreeType</li>
+        <li>cv:courseDescription</li>
+        <li>cvapi:studiedBy</li>
+      </ul>
+
+      <h4>Description</h4>
+
+     An academic course studied by a candidate.
+  </div>
+
+
+  <div class='resource'>
+    <h3>Job</h3>
+      <h4>Template</h4>
+      <div id='template'><pre>https://antoniogarrote.com/cvbuilder/api/candiates/:candiate_id/jobs/[:id]</pre></div>
+
+      <h4>Uniform interface</h4>
+      <ul span='uniform_interface'>
+        <li>GET</li>
+        <li>POST</li>
+        <li>PUT</li>
+        <li>DELETE</li>
+      </ul>
+
+      <h4>Vocabulary</h4>
+      <ul>
+        <li>cv:startDate</li>
+        <li>cv:endDate</li>
+        <li>cv:employedIn</li>
+        <li>cv:jobTitle</li>
+        <li>cv:jobDescription</li>
+        <li>cv:heldBy</li>
+      </ul>
+
+      <h4>Description</h4>
+
+     A certain work experience accumulated by a candidate.
+  </div>
+
+
+  <h2 id='examples'>Examples</h2>
+
+  <h3>Creation of a candidate</h3>
+
+  <pre>
+    curl -X POST -H "Content-Type: application/turtle" -E cert.pem:passwd
+    -d @test_candidate.ttl https://antoniogarrote.com/cvbuilder/api/candidates
+  </pre>
+
+
+  <p>
+    Content of the <code>test_candidate.ttl</code> file.
+  </p>
+
+  <pre>
+@prefix vc:<http://www.w3.org/2006/vcard/ns#> .
+[ vc:given-name "John" ;
+  vc:family-name "Test" ;
+  vc:bday "01-05-1981" ;
+  vc:tel "+34689907848" ;
+  vc:adr "Frochnal 45, London" ]
+  </pre>
+
+
+  <h3>Retrieval of the candidate</h3>
+
+  <pre>
+    curl -H "Content-Type: application/json"http://antoniogarrote.com/cvbuilder/api/
+    candidates/john-test-15
+  </pre>
+  <br/>
+  <pre>
+    curl http://antoniogarrote.com/cvbuilder/api/candidates/john-test-15?_format=json
+  </pre>
+<p>
+  Returned document:
+</p>
+
+  <pre>
+
+[{"#":{"cvapi" : "https:\/\/antoniogarrote.com\/cvbuilder\/api\/",
+       "xsd"   : "http:\/\/www.w3.org\/2001\/XMLSchema#",
+       "rdfs"  : "http:\/\/www.w3.org\/2000\/01\/rdf-schema#",
+       "rdf"   : "http:\/\/www.w3.org\/1999\/02\/22-rdf-syntax-ns#",
+       "foaf"  : "http:\/\/xmlns.com\/foaf\/0.1\/",
+       "vcard" : "http:\/\/www.w3.org\/2006\/vcard\/ns#",
+       "cv"    : "http:\/\/rdfs.org\/resume-rdf\/"},
+
+   "@":"cvapi:candidates\/john-test-15#self",
+
+   "vcard:adr":"Frochnal 45, London",
+   "vcard:tel":"+34689907848",
+   "vcard:bday":"01-05-1981",
+   "vcard:family-name":"Test",
+   "vcard:given-name":"John"}]
+  </pre>
+
+  <h3>Retrieval of a candidate using JSONP</h3>
+
+  <pre>curl
+  http://antoniogarrote.com/cvbuilder/api/candidates/john-test-15?_callback=callback</pre>
+  <p>
+  Returned response:
+</p>
+  <pre>
+callback([{"#":{"cvapi" : "https:\/\/antoniogarrote.com\/cvbuilder\/api\/",
+                "vcard" : "http:\/\/www.w3.org\/2006\/vcard\/ns#",
+                "xsd"   : "http:\/\/www.w3.org\/2001\/XMLSchema#",
+                "rdfs"  : "http:\/\/www.w3.org\/2000\/01\/rdf-schema#",
+                "rdf"   : "http:\/\/www.w3.org\/1999\/02\/22-rdf-syntax-ns#",
+                "foaf"  : "http:\/\/xmlns.com\/foaf\/0.1\/",
+                "cv"    : "http:\/\/rdfs.org\/resume-rdf\/"},
+
+           "@":"cvapi:candidates\/john-test-15#self",
+
+           "vcard:adr":"Frochnal 45, London",
+           "vcard:tel":"+34689907848",
+           "vcard:bday":"01-05-1981",
+           "vcard:family-name":"Test",
+           "vcard:given-name":"John"}]);
+  </pre>
+
+  <h3>Creation of a job</h3>
+
+  <pre>curl -X POST -H "Content-Type: application/turtle" -E cert.pem:passwd
+  -d@test_job.ttl
+  https://antoniogarrote.com/cvbuilder/api/candidates/john-test-15/jobs</pre>
+<p>
+  Content of the <code>test_job.ttl</code> file:
+</p>
+  <pre>
+@prefix cv:<http://rdfs.org/resume-rdf/> .
+
+[ cv:startDate "01-09-2000" ;
+  cv:endDate "01-07-2003" ;
+  cv:employedIn <http://xing.com/> ;
+  cv:jobTitle "Senior Developer" ;
+  cv:jobDescription "Work as a ruby developer" ;
+  cv:heldBy <https://antoniogarrote.com/cvbuilder/api/candidates/john-test-15#self> ]
+  </pre>
+
+<h3>Update a job</h3>
+
+<pre>
+curl -X PUT -H "Content-Type: application/turtle" -E cert.pem:passwd
+-d @test_job_update.ttl https://antoniogarrote.com/cvbuilder/api/candidates
+/john-test-15/jobs/17
+</pre>
+<p>
+Content of the <code>test_job_update.ttl</code> file:
+</p>
+<pre>
+@prefix cv:<http://rdfs.org/resume-rdf/> .
+<https://antoniogarrote.com/cvbuilder/api/candidates/john-test-15/jobs/17#self>
+  cv:startDate "01-09-2000" ;
+  cv:endDate "01-07-2003" ;
+  cv:employedIn <http://xing.com/> ;
+  cv:jobTitle "Senior Developer" ;
+  cv:jobDescription "Work as a Ruby on Rails" ;
+  cv:heldBy <https://antoniogarrote.com/cvbuilder/api/candidates/john-test-15#self> .
+</pre>
+
+
+<h3>Delete a job</h3>
+<pre>
+curl -X DELETE -E cert.pem:passwd https://antoniogarrote.com/cvbuilder/api/
+candidates/john-test-15/jobs/17
+</pre>
+  </body>
+</html>

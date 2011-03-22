@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE
+   html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+  <head>
+    <title>FOAF+SSL tutorial</title>
+    <link rel="stylesheet" href="css/app.css"></link>
+  </head>
+  <body>
+    <div id='tutorial_content'>
+      <div id='header_logo'>
+        <span id='logo_text'>FOAF+SSL</span>
+        <img id='logo_image' src='pics/foafssl.png'></img>
+      </div>
+      <p id='introduction'>
+        Setting up FOAF+SSL authentication with current browsers is not yet a
+        streamlined process. The situation will surely improve in the future if the
+        technology gains adoption. </br>
+      From the end user point of view, it introduces some concepts quite different
+      from other authentication mechanisms like OAuth.
+      To be able to use FOAF+SSL to gain access to a web resource there is a
+      number of requirements that must be in place:
+      </p>
+
+      <ul>
+        <li>The user must have a WebID: anxs URI identifying the user when accessing
+          a resource (e.g. http://foaf.me/some_person#me)</li>
+        <li>The WebID must be contained in a RDF public document that can be
+          retrieved via URI (e.g. http://foaf.me/some_person.rdf).</li>
+        <li>A X509 certificate must be associated to that WebID and public
+          information about the certificate must be inserted in the RDF public
+          document containing the WebID. The FOAF vocabulary must be used to
+          describe this information about the certificate and the WebID</li>
+        <li>When the user, or the web browser in the name of the user, tries to
+          retrieve a resource on the web protected using the HTTPS protocol, it must be able to
+          send the X509 certificate associated to the WebID in the HTTPS request if
+          required by the web server.</li>
+      </ul>
+
+        <p>
+          Since the X509 certificate is associated to the WebID of the user, and this
+          WebID is just a plain URI, the web server can retrieve the RDF document
+          containing the WebID and the public information about the associated
+          certificate. With this information it can check that the certificate sent is
+          really associated to the claimed WebID and decide if the user has access to
+          the rquested resource.<br/>
+
+          It is interesting to note that the real power of FOAF+SSL becomes apparent
+          if you consider that the web server can decide if allow access to the
+          resource to a user considering not only the access right of this user, but
+          any relation of trust between the user accessing the resource and any other
+          user. Additionally these relationships of trust can be exposed as RDF graphs
+          using the FOAF vocabulary and linked to public URIs that can be retrieved
+          using the HTTP protocol.
+        </p>
+
+        <p>
+          This section describes the steps required to get a WebID, create a FOAF
+          document in the web with an associated certificate and install the
+          certificate in a web browser.
+        </p>
+
+        <p>
+          The process can be completed with any browser, but the details will vary
+          from one user to other. In this example we will use Firefox 4 RC1.
+        </p>
+
+        <img src='pics/steps/step1.png'></img>
+
+        <p>
+          To build a WebID and store it into a public webserver with an associated
+          URI we could use our own web server, but is usually more convenient to
+          use an online provider. One possible provider
+          is <a href='http://foaf.me/'>foaf.me</a>.
+        </p>
+
+        <img src='pics/steps/step2.png'></img>
+
+        <p>
+          From the main page of <a href='http://foaf.me'>foaf.me</a> we can
+          introduce some personal details that will be stored using the FOAF
+          vocabulary in the document containing our WebID.
+        </p>
+
+        <img src='pics/steps/step3.png'></img>
+
+        <p>
+          While entering the personal details, we can see in the box below the RDF
+          document with our personal information and the WebID in the XML
+          serialization of RDF.<br/>
+          The final text for our WebID URI can also be edited in the text field
+          located next to the save button.
+        </p>
+
+        <img src='pics/steps/step4.png'></img>
+
+        <p>
+          Once we have submitted the form and if everything is correct, we will
+          have created a new WebID and store it in a RDF document located at the
+          <a href='http://foaf.me/'>foaf.me</a> web server.</br>
+        After that, <a href='http://foaf.me/'>foaf.me</a> allows us to create a X509 certificate and
+        associate it to the RDF document.
+      </p>
+
+      <img src='pics/steps/step5.png'></img>
+
+      <p>
+        Once we have submitted the form and if everything is correct, we will
+        have created a new WebID and store it in a RDF document stored in the
+        <a href='http://foaf.me/'>foaf.me</a> web server.</br>
+      After that, <a href='http://foaf.me/'>foaf.me</a> allows us to create a X509 certificate and
+      associate it into the RDF document.
+    </p>
+
+    <img src='pics/steps/step5.png'></img>
+
+    <p>
+      The process should be handled automatically by the browser,
+      nevertheless, a number of screens with warnings will be displayed by
+      Firefox while installing the certificate. We can safely ignore all
+      them. Some of these warnings are displayed because FOAF+SSL makes use of
+      SSL certificates in a different way than the common one. In FOAF+SSL
+      certificates do not need to be trusted by any certification
+      authority. They are essentially self-signed certificates and this kind of
+      certificates are generally not trusted by HTTP agents like web
+      browsers. The security component in FOAF+SSL is instead achieved by
+      including the URI with our WebID inside the signed certificate and
+      matching the certificate information against the public information
+      stored in the RDF document associated to the WebID.
+    </p>
+
+    <img src='pics/steps/step6.png'></img>
+    <img src='pics/steps/step7.png'></img>
+
+    <p>
+      If there are no errors, the certificate should be now installed in the
+      web browser. If we close and restart the browser, we are ready to use it with any FOAF+SSL secured
+      resource. The certificate can be exported from Firefox and installed in
+      any other web browser or HTTP client we use.
+    </p>
+
+    <img src='pics/steps/step8.png'></img>
+
+
+    <p>
+      If we try to open a connection  to
+      the <a http='https://antoniogarrote.com/cvbuilder/client.html'>CVBuilder</a>
+      web application using a secure HTTPS connection, Firefox will display
+      a dialog box requesting us to select the certificate we want to use to
+      identify ourselves in the HTTPS request. We can select the certificate
+      we have just created.</p>
+  <p>
+    (Unfortunately, Firefox does not trust the certification authority of our web server,
+    so an additional warning about the server will be displayed. The problem
+    is not present if you are using other browsers like Chrome or Safari).
+  </p>
+
+  <img src='pics/steps/step11.png'></img>
+
+  <img src='pics/steps/step13.png'></img>
+
+  <p>
+    When the certificate is transmitted in the HTTPS request, CVBuilder will
+    retrieve the RDF document stored in
+    the <a href='http://foaf.me/'>foaf.me</a> containing the information associated to
+    your WebID. It will check that the public information about the
+    certificate matches the one sent in the HTTPS request and grant you
+    access to the protected resource being requested.
+  </p>
+
+  <img src='pics/steps/step14.png' style='max-width:700px'></img>
+
+  <p>
+    <a href='/index.html'>Back</a>
+  </p>
+</div>
+</body>
+</html>

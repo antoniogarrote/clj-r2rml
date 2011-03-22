@@ -67,7 +67,6 @@
   networkOperation = @"LOAD";
 
   var urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
-  [urlConnection start];
 
 }
 
@@ -79,14 +78,27 @@
 
   var endpoint = [[Backend apiEndpoint] stringByAppendingString: @"/cvs"];
 
-  var request = [[CPURLRequest alloc] initWithURL:endpoint];
-  [request setHTTPMethod:@"GET"];
-  [request setValue:"application/json" forHTTPHeaderField:@"Content-Type"];
+  if(jQuery) {
+    jQuery.ajax({
+      url: endpoint,
+      contentType: "application/json",
+      dataType: "json",
+      success: function(objs){
+          [delegate cvsLoaded:objs];
+      },
+      error: function() {
+        [AppController networkError];
+      }
+    });
+  } else {
+    var request = [[CPURLRequest alloc] initWithURL:endpoint];
+    [request setHTTPMethod:@"GET"];
+    [request setValue:"application/json" forHTTPHeaderField:@"Content-Type"];
 
-  networkOperation = @"LOAD";
+    networkOperation = @"LOAD";
 
-  var urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
-  [urlConnection start];
+    var urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
+  }
 
 }
 
@@ -108,7 +120,6 @@
 
   var urlConnection = [CPURLConnection connectionWithRequest:request delegate:self];
   [urlConnection start];
-
 }
 
 -(void)graphLoaded
@@ -117,14 +128,12 @@
   [CPApp abortModal];
 }
 
-
 -(void)connection:(CPURLConnection)connection didFailWithError:(CPString)error {
   [AppController networkError];
 }
 
 
 -(void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data {
-
   objs = [data objectFromJSON];
 
   if(state === "LOAD_EDUCATIONS_STEP") {
@@ -141,7 +150,12 @@
     [self loadJobs];
 
   } else if(state === "LOAD_CVS_STEP"){
-    [delegate cvsLoaded:objs];
+    if(data === "") {
+      // this seems to be a bug in Cappuccino, didFailWithError is never invoked
+      [AppController networkError];
+    } else {
+      [delegate cvsLoaded:objs];
+    }
   } else {
     [progressBar incrementBy:1.0];
     for(var i=0; i<objs.length; i++) {
