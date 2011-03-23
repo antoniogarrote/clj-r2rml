@@ -1,0 +1,9 @@
+@prefix cv:<http://rdfs.org/resume-rdf/> .
+
+<https://antoniogarrote.com/cvbuilder/api/candidates/john-test-15/jobs/17#self> 
+  cv:startDate "01-09-2000" ;
+  cv:endDate "01-07-2003" ;
+  cv:employedIn <http://xing.com/> ;
+  cv:jobTitle "Senior Developer" ;
+  cv:jobDescription "dull ruby code writting ditto" ;
+  cv:heldBy <https://antoniogarrote.com/cvbuilder/api/candidates/john-test-15#self> .
